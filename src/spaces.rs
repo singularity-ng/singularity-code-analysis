@@ -289,6 +289,7 @@ pub fn metrics<'a, T: ParserTrait>(parser: &'a T, path: &'a Path) -> Option<Func
     let code = parser.get_code();
     let _code_guard = enter_code_context(code);
     let node = parser.get_root();
+    
     let mut cursor = node.cursor();
     let mut stack = Vec::new();
     let mut children = Vec::new();
@@ -393,8 +394,12 @@ mod tests {
             "void Foo::bar(){
                 return;
             }",
-            "foo.c",
+            "foo.cpp",
             |func_space| {
+                assert!(!func_space.spaces.is_empty(), 
+                    "Expected at least one function space, but found none. \
+                     This likely indicates the C++ scope resolution operator (::) is not being parsed correctly.");
+                
                 insta::assert_json_snapshot!(
                     func_space.spaces[0].name,
                     @r###""Foo::bar""###

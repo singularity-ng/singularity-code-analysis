@@ -53,7 +53,9 @@ pub trait ParserTrait {
 
 pub(crate) trait Search<'a> {
     fn first_occurrence(&self, pred: fn(u16) -> bool) -> Option<Node<'a>>;
+    fn first_occurrence_kind(&self, pred: fn(&Node<'a>) -> bool) -> Option<Node<'a>>;
     fn act_on_node(&self, pred: &mut dyn FnMut(&Node<'a>));
     fn first_child(&self, pred: fn(u16) -> bool) -> Option<Node<'a>>;
+    fn first_child_kind(&self, pred: fn(&Node<'a>) -> bool) -> Option<Node<'a>>;
     fn act_on_child(&self, action: &mut dyn FnMut(&Node<'a>));
 }

@@ -390,7 +390,9 @@ pub(crate) fn check_func_space<T: crate::ParserTrait, F: Fn(crate::FuncSpace)>(
     trimmed_bytes.push(b'\n');
     let parser = T::new(trimmed_bytes, &path, None);
     match crate::metrics(&parser, &path) {
-        Some(func_space) => check(func_space),
+        Some(func_space) => {
+            check(func_space)
+        },
         None => {
             // For files with no functions, create a default FuncSpace with proper error handling
             let line_count = std::str::from_utf8(parser.get_code())
