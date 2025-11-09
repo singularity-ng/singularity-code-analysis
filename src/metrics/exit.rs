@@ -261,8 +261,8 @@ mod tests {
                 @r#"
             {
               "sum": 0.0,
-              "average": 0.0,
-              "min": 18446744073709552000.0,
+              "average": null,
+              "min": 0.0,
               "max": 0.0
             }
             "#
@@ -279,8 +279,8 @@ mod tests {
                 @r#"
             {
               "sum": 0.0,
-              "average": 0.0,
-              "min": 18446744073709552000.0,
+              "average": null,
+              "min": 0.0,
               "max": 0.0
             }
             "#
@@ -331,7 +331,7 @@ mod tests {
                   "sum": 2.0,
                   "average": 1.0,
                   "min": 0.0,
-                  "max": 2.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -356,9 +356,9 @@ mod tests {
                     @r#"
                 {
                   "sum": 2.0,
-                  "average": 1.0,
+                  "average": 0.3333333333333333,
                   "min": 0.0,
-                  "max": 2.0
+                  "max": 1.0
                 }
                 "#
                 );

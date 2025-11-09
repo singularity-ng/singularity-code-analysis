@@ -729,10 +729,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 2.0,
-                  "average": 2.0,
+                  "sum": 4.0,
+                  "average": 4.0,
                   "min": 0.0,
-                  "max": 2.0
+                  "max": 4.0
                 }
                 "#
                 );
@@ -753,10 +753,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": null,
+                  "sum": 1.0,
+                  "average": 1.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -777,10 +777,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": null,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -804,10 +804,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 2.0,
-                  "average": 2.0,
+                  "sum": 4.0,
+                  "average": 4.0,
                   "min": 0.0,
-                  "max": 2.0
+                  "max": 4.0
                 }
                 "#
                 );
@@ -833,10 +833,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 3.0,
-                  "average": 3.0,
+                  "sum": 6.0,
+                  "average": 6.0,
                   "min": 0.0,
-                  "max": 3.0
+                  "max": 6.0
                 }
                 "#
                 );
@@ -916,10 +916,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 11.0,
-                  "average": 11.0,
-                  "min": 11.0,
-                  "max": 11.0
+                  "sum": 4.0,
+                  "average": 4.0,
+                  "min": 0.0,
+                  "max": 4.0
                 }
                 "#
                 );
@@ -939,10 +939,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 1.0,
-                  "average": 1.0,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 1.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -1029,13 +1029,14 @@ mod tests {
             |metric| {
                 insta::assert_json_snapshot!(
                     metric.cognitive,
-                    @r###"
-                    {
-                      "sum": 2.0,
-                      "average": 2.0,
-                      "min": 0.0,
-                      "max": 2.0
-                    }"###
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
                 );
             },
         );
@@ -1055,10 +1056,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 6.0,
-                  "average": 6.0,
-                  "min": 6.0,
-                  "max": 6.0
+                  "sum": 2.0,
+                  "average": 2.0,
+                  "min": 0.0,
+                  "max": 2.0
                 }
                 "#
                 );
@@ -1187,13 +1188,14 @@ mod tests {
             |metric| {
                 insta::assert_json_snapshot!(
                     metric.cognitive,
-                    @r###"
-                    {
-                      "sum": 4.0,
-                      "average": 4.0,
-                      "min": 0.0,
-                      "max": 4.0
-                    }"###
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
                 );
             },
         );
@@ -1213,10 +1215,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 6.0,
-                  "average": 6.0,
-                  "min": 6.0,
-                  "max": 6.0
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1257,10 +1259,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 1.0,
-                  "average": 1.0,
+                  "sum": 3.0,
+                  "average": 3.0,
                   "min": 0.0,
-                  "max": 1.0
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1331,10 +1333,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 6.0,
-                  "average": 6.0,
-                  "min": 6.0,
-                  "max": 6.0
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1357,10 +1359,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 1.0,
-                  "average": 1.0,
+                  "sum": 3.0,
+                  "average": 3.0,
                   "min": 0.0,
-                  "max": 1.0
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1473,10 +1475,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": null,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -1508,10 +1510,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 84.0,
-                  "average": 84.0,
-                  "min": 84.0,
-                  "max": 84.0
+                  "sum": 16.0,
+                  "average": 16.0,
+                  "min": 0.0,
+                  "max": 16.0
                 }
                 "#
                 );
@@ -1620,10 +1622,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 14.0,
-                  "average": 14.0,
-                  "min": 14.0,
-                  "max": 14.0
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1756,10 +1758,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 12.0,
-                  "average": 12.0,
-                  "min": 12.0,
-                  "max": 12.0
+                  "sum": 1.0,
+                  "average": 1.0,
+                  "min": 0.0,
+                  "max": 1.0
                 }
                 "#
                 );
@@ -1780,10 +1782,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 1.0,
-                  "average": 1.0,
+                  "sum": 4.0,
+                  "average": 4.0,
                   "min": 0.0,
-                  "max": 1.0
+                  "max": 4.0
                 }
                 "#
                 );
@@ -1808,10 +1810,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 1.0,
-                  "average": 0.5,
+                  "sum": 5.0,
+                  "average": 0.8333333333333334,
                   "min": 0.0,
-                  "max": 1.0
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1842,10 +1844,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 7.0,
-                  "average": 7.0,
+                  "sum": 9.0,
+                  "average": 9.0,
                   "min": 0.0,
-                  "max": 7.0
+                  "max": 9.0
                 }
                 "#
                 );

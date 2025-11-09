@@ -317,9 +317,9 @@ mod tests {
               "average_closures": 0.0,
               "total": 0.0,
               "average": 0.0,
-              "functions_min": 18446744073709552000.0,
+              "functions_min": 0.0,
               "functions_max": 0.0,
-              "closures_min": 18446744073709552000.0,
+              "closures_min": 0.0,
               "closures_max": 0.0
             }
             "#
@@ -341,9 +341,9 @@ mod tests {
               "average_closures": 0.0,
               "total": 0.0,
               "average": 0.0,
-              "functions_min": 18446744073709552000.0,
+              "functions_min": 0.0,
               "functions_max": 0.0,
-              "closures_min": 18446744073709552000.0,
+              "closures_min": 0.0,
               "closures_max": 0.0
             }
             "#
@@ -364,14 +364,14 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
+                  "total_functions": 2.0,
                   "total_closures": 0.0,
-                  "average_functions": 0.0,
+                  "average_functions": 2.0,
                   "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
+                  "total": 2.0,
+                  "average": 2.0,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
+                  "functions_max": 2.0,
                   "closures_min": 0.0,
                   "closures_max": 0.0
                 }
@@ -427,15 +427,15 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
+                  "total_functions": 2.0,
                   "total_closures": 0.0,
-                  "average_functions": 0.0,
+                  "average_functions": 2.0,
                   "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
-                  "functions_min": 18446744073709552000.0,
-                  "functions_max": 0.0,
-                  "closures_min": 18446744073709552000.0,
+                  "total": 2.0,
+                  "average": 2.0,
+                  "functions_min": 0.0,
+                  "functions_max": 2.0,
+                  "closures_min": 0.0,
                   "closures_max": 0.0
                 }
                 "#
@@ -457,16 +457,16 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
-                  "total_closures": 4.0,
-                  "average_functions": 0.0,
-                  "average_closures": 4.0,
-                  "total": 4.0,
-                  "average": 4.0,
+                  "total_functions": 2.0,
+                  "total_closures": 0.0,
+                  "average_functions": 2.0,
+                  "average_closures": 0.0,
+                  "total": 2.0,
+                  "average": 2.0,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
-                  "closures_min": 4.0,
-                  "closures_max": 4.0
+                  "functions_max": 2.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
                 }
                 "#
                 );
@@ -483,15 +483,15 @@ mod tests {
                 @r#"
             {
               "total_functions": 0.0,
-              "total_closures": 0.0,
+              "total_closures": 1.0,
               "average_functions": 0.0,
-              "average_closures": 0.0,
-              "total": 0.0,
-              "average": 0.0,
+              "average_closures": 0.5,
+              "total": 1.0,
+              "average": 0.5,
               "functions_min": 0.0,
               "functions_max": 0.0,
-              "closures_min": 0.0,
-              "closures_max": 0.0
+              "closures_min": 1.0,
+              "closures_max": 1.0
             }
             "#
             );
@@ -537,15 +537,15 @@ mod tests {
                     @r#"
                 {
                   "total_functions": 0.0,
-                  "total_closures": 0.0,
+                  "total_closures": 2.0,
                   "average_functions": 0.0,
-                  "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
-                  "functions_min": 18446744073709552000.0,
+                  "average_closures": 2.0,
+                  "total": 2.0,
+                  "average": 2.0,
+                  "functions_min": 0.0,
                   "functions_max": 0.0,
-                  "closures_min": 18446744073709552000.0,
-                  "closures_max": 0.0
+                  "closures_min": 2.0,
+                  "closures_max": 2.0
                 }
                 "#
                 );
@@ -561,16 +561,16 @@ mod tests {
                 metric.nargs,
                 @r#"
             {
-              "total_functions": 0.0,
-              "total_closures": 8.0,
-              "average_functions": 0.0,
-              "average_closures": 4.0,
-              "total": 8.0,
-              "average": 4.0,
+              "total_functions": 2.0,
+              "total_closures": 0.0,
+              "average_functions": 2.0,
+              "average_closures": 0.0,
+              "total": 2.0,
+              "average": 2.0,
               "functions_min": 0.0,
-              "functions_max": 0.0,
-              "closures_min": 4.0,
-              "closures_max": 4.0
+              "functions_max": 2.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
             }
             "#
             );
@@ -593,14 +593,14 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
+                  "total_functions": 4.0,
                   "total_closures": 0.0,
-                  "average_functions": 0.0,
+                  "average_functions": 2.0,
                   "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
+                  "total": 4.0,
+                  "average": 2.0,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
+                  "functions_max": 2.0,
                   "closures_min": 0.0,
                   "closures_max": 0.0
                 }
@@ -728,15 +728,15 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
+                  "total_functions": 4.0,
                   "total_closures": 0.0,
-                  "average_functions": 0.0,
+                  "average_functions": 2.0,
                   "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
-                  "functions_min": 18446744073709552000.0,
-                  "functions_max": 0.0,
-                  "closures_min": 18446744073709552000.0,
+                  "total": 4.0,
+                  "average": 2.0,
+                  "functions_min": 0.0,
+                  "functions_max": 2.0,
+                  "closures_min": 0.0,
                   "closures_max": 0.0
                 }
                 "#
@@ -794,16 +794,16 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
-                  "total_closures": 12.0,
-                  "average_functions": 0.0,
-                  "average_closures": 4.0,
-                  "total": 12.0,
-                  "average": 4.0,
+                  "total_functions": 4.0,
+                  "total_closures": 0.0,
+                  "average_functions": 2.0,
+                  "average_closures": 0.0,
+                  "total": 4.0,
+                  "average": 2.0,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
-                  "closures_min": 4.0,
-                  "closures_max": 4.0
+                  "functions_max": 2.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
                 }
                 "#
                 );
@@ -856,16 +856,16 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
-                  "total_closures": 0.0,
-                  "average_functions": 0.0,
-                  "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
+                  "total_functions": 3.0,
+                  "total_closures": 2.0,
+                  "average_functions": 1.5,
+                  "average_closures": 0.5,
+                  "total": 5.0,
+                  "average": 0.8333333333333334,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
+                  "functions_max": 2.0,
                   "closures_min": 0.0,
-                  "closures_max": 0.0
+                  "closures_max": 2.0
                 }
                 "#
                 );
@@ -922,16 +922,16 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
-                  "total_closures": 0.0,
-                  "average_functions": 0.0,
-                  "average_closures": 0.0,
-                  "total": 0.0,
-                  "average": 0.0,
-                  "functions_min": 18446744073709552000.0,
-                  "functions_max": 0.0,
-                  "closures_min": 18446744073709552000.0,
-                  "closures_max": 0.0
+                  "total_functions": 3.0,
+                  "total_closures": 3.0,
+                  "average_functions": 3.0,
+                  "average_closures": 1.5,
+                  "total": 6.0,
+                  "average": 2.0,
+                  "functions_min": 0.0,
+                  "functions_max": 3.0,
+                  "closures_min": 0.0,
+                  "closures_max": 3.0
                 }
                 "#
                 );
@@ -957,16 +957,16 @@ mod tests {
                     metric.nargs,
                     @r#"
                 {
-                  "total_functions": 0.0,
-                  "total_closures": 15.0,
-                  "average_functions": 0.0,
-                  "average_closures": 3.75,
-                  "total": 15.0,
-                  "average": 3.75,
+                  "total_functions": 7.0,
+                  "total_closures": 0.0,
+                  "average_functions": 1.75,
+                  "average_closures": 0.0,
+                  "total": 7.0,
+                  "average": 1.75,
                   "functions_min": 0.0,
-                  "functions_max": 0.0,
-                  "closures_min": 3.0,
-                  "closures_max": 4.0
+                  "functions_max": 2.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
                 }
                 "#
                 );
