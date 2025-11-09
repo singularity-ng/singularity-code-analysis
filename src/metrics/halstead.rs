@@ -5,7 +5,7 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, getter::Getter, macros::implement_metric_trait, *};
+use crate::{checker::Checker, getter::Getter, *};
 
 /// The `Halstead` metric suite.
 #[derive(Default, Clone, Debug)]

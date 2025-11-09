@@ -608,15 +608,11 @@ impl Getter for ElixirCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "binary_operator" | "unary_operator" | "operator_identifier" | "dot" => {
-                HalsteadType::Operator
-            }
-            "call" | "arguments" => HalsteadType::Operator,
+            "binary_operator" | "unary_operator" | "operator_identifier" | "dot"
+            | "call" | "arguments" => HalsteadType::Operator,
             "identifier" | "alias" | "atom" | "quoted_atom" | "integer" | "string" | "charlist"
-            | "sigil" | "list" | "tuple" | "map" | "struct" | "keywords" => {
-                HalsteadType::Operand
-            }
-            "anonymous_function" => HalsteadType::Operand,
+            | "sigil" | "list" | "tuple" | "map" | "struct" | "keywords"
+            | "anonymous_function" => HalsteadType::Operand,
             "+" | "-" | "*" | "/" | "%" | "++" | "--" | "::" | "->" | "<-" | "<>" | "||"
             | "&&" | "===" | "==" | "!==" | "!=" | "<" | "<=" | ">" | ">=" | "in" | "when"
             | "and" | "or" | "not" | "xor" | "<<<" | ">>>" | "^^^" | "~~~" | "&&&" | "|||"
@@ -706,8 +702,7 @@ impl Getter for ErlangCode {
     fn get_space_kind(node: &Node) -> SpaceKind {
         match node.kind() {
             "source_file" => SpaceKind::Unit,
-            "fun_decl" | "function_clause" => SpaceKind::Function,
-            "anonymous_fun" => SpaceKind::Function,
+            "fun_decl" | "function_clause" | "anonymous_fun" => SpaceKind::Function,
             _ => SpaceKind::Unknown,
         }
     }
@@ -726,15 +721,12 @@ impl Getter for ErlangCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "binary_op_expr" | "unary_op_expr" | "match_expr" | "catch_expr" => {
-                HalsteadType::Operator
-            }
-            "atom" | "var" | "list" | "tuple" | "map_expr" => HalsteadType::Operand,
-            "+" | "-" | "*" | "/" | "%" | "div" | "rem" | "band" | "bor" | "bxor" | "bsl"
+            "binary_op_expr" | "unary_op_expr" | "match_expr" | "catch_expr"
+            | "+" | "-" | "*" | "/" | "%" | "div" | "rem" | "band" | "bor" | "bxor" | "bsl"
             | "bsr" | "and" | "or" | "not" | "xor" | "orelse" | "andalso" | "==" | "/="
             | "=:= " | "=/=" | "<" | "<=" | ">" | ">=" | "++" | "--" | "!" | "catch" | "of"
             | "after" => HalsteadType::Operator,
-            "(" | ")" | "[" | "]" | "{" | "}" => HalsteadType::Unknown,
+            "atom" | "var" | "list" | "tuple" | "map_expr" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
     }
@@ -755,8 +747,7 @@ impl Getter for GleamCode {
     fn get_space_kind(node: &Node) -> SpaceKind {
         match node.kind() {
             "source_file" => SpaceKind::Unit,
-            "function" => SpaceKind::Function,
-            "anonymous_function" => SpaceKind::Function,
+            "function" | "anonymous_function" => SpaceKind::Function,
             _ => SpaceKind::Unknown,
         }
     }
@@ -773,13 +764,11 @@ impl Getter for GleamCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "binary_expression" | "boolean_negation" | "integer_negation" | "pipeline_echo" => {
-                HalsteadType::Operator
-            }
-            "case" | "let" => HalsteadType::Operator,
-            "identifier" | "integer" | "float" | "string" | "comment" => HalsteadType::Operand,
-            "+" | "-" | "*" | "/" | "%" | "++" | "--" | "<" | "<=" | ">" | ">=" | "==" | "!="
+            "binary_expression" | "boolean_negation" | "integer_negation" | "pipeline_echo"
+            | "case" | "let"
+            | "+" | "-" | "*" | "/" | "%" | "++" | "--" | "<" | "<=" | ">" | ">=" | "==" | "!="
             | "&&" | "||" | "<-" | "->" | "if" | "else" => HalsteadType::Operator,
+            "identifier" | "integer" | "float" | "string" | "comment" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
     }
