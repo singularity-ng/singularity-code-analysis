@@ -97,7 +97,7 @@ end
 
 ### **✅ 17 Comprehensive Metrics**
 - **Traditional (12)**: ABC, Cognitive, Cyclomatic, Halstead, LOC, MI, NARGS, NOM, NPA, NPM, WMC, Exit
-- **AI/LLM (5)**: Semantic Complexity, Refactoring Readiness, AI Code Quality, Code Smell Density, Testability Score
+- **Insight Metrics (5)**: Semantic Complexity, Refactoring Readiness, Composite Code Quality, Code Smell Density, Testability Score
 
 ### **✅ AI-Powered Features**
 - **Code Evolution Tracking**: Analyze how codebases change over time

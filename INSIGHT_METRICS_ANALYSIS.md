@@ -1,4 +1,4 @@
-# 🧠 AI/LLM-Powered Metrics Analysis for Best-in-Class Code Analysis
+# 🧠 Insight Metrics Analysis for Best-in-Class Code Analysis
 
 ## Current Metrics Inventory
 
@@ -16,9 +16,9 @@
 11. **NPM** - Number of Private Methods
 12. **WMC** - Weighted Methods per Class
 
-## 🚀 **Missing AI/LLM-Powered Metrics for Best-in-Class**
+## 🚀 **Missing Insight Metrics for Best-in-Class**
 
-### **High Priority - Core AI Metrics**
+### **High Priority - Core Insight Metrics**
 
 #### 1. **Semantic Complexity** (NEW)
 - **What**: Measures semantic understanding difficulty
@@ -32,7 +32,7 @@
 - **Implementation**: Pattern analysis + LLM assessment
 - **Value**: Guides AI refactoring decisions
 
-#### 3. **AI-Generated Code Quality** (NEW)
+#### 3. **Composite Code Quality** (NEW)
 - **What**: Measures quality of AI-generated code
 - **Why**: Essential for AI coding systems
 - **Implementation**: LLM-based quality assessment
@@ -110,7 +110,7 @@
 3. **Code Smell Density** - Essential for AI code quality
 
 ### **Phase 2: Quality Metrics (Week 3-4)**
-4. **AI-Generated Code Quality** - Validates AI output
+4. **Composite Code Quality** - Validates AI output
 5. **Testability Score** - Guides AI test generation
 6. **Technical Debt Density** - Prioritizes AI refactoring
 
@@ -127,10 +127,10 @@
 ## 🔧 **Implementation Architecture**
 
 ```rust
-// New module: src/metrics/ai_metrics.rs
+// New module: src/metrics/insight_metrics.rs
 pub mod semantic_complexity;
 pub mod refactoring_readiness;
-pub mod ai_code_quality;
+pub mod composite_code_quality;
 pub mod code_smell_density;
 pub mod testability_score;
 pub mod technical_debt_density;

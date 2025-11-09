@@ -388,16 +388,14 @@ impl Stats {
     /// The `Blank` metric.
     ///
     /// Counts the number of blank lines in a scope.
-    /// Uses accumulated SLOC sum for accurate calculation across merged scopes.
     #[inline(always)]
     pub fn blank(&self) -> f64 {
-        self.sloc.sloc_sum as f64 - self.ploc() - self.cloc.only_comment_lines as f64
+        (self.sloc() - self.ploc() - self.cloc.only_comment_lines as f64).max(0.0)
     }
 
     /// The `Sloc` metric average value.
     ///
     /// This value is computed dividing the accumulated `Sloc` sum by the number of spaces.
-    /// Uses sloc_sum for proper averaging across multiple scopes/files.
     #[inline(always)]
     pub fn sloc_average(&self) -> f64 {
         self.sloc.sloc_sum as f64 / self.space_count as f64
@@ -570,6 +568,14 @@ fn check_comment_ends_on_code_line(stats: &mut Stats, start_code_line: usize) {
     }
 }
 
+#[inline(always)]
+fn record_code_line(stats: &mut Stats, start: usize) {
+    check_comment_ends_on_code_line(stats, start);
+    if stats.ploc.lines.insert(start) {
+        stats.lloc.logical_lines += 1;
+    }
+}
+
 impl Loc for PythonCode {
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Python::*;
@@ -633,10 +639,26 @@ impl Loc for MozjsCode {
             Comment => {
                 add_cloc_lines(stats, start, end);
             }
-            ExpressionStatement | ExportStatement | ImportStatement | StatementBlock
-            | IfStatement | SwitchStatement | ForStatement | ForInStatement | WhileStatement
-            | DoStatement | TryStatement | WithStatement | BreakStatement | ContinueStatement
-            | DebuggerStatement | ReturnStatement | ThrowStatement | EmptyStatement
+            ExpressionStatement
+            | ExportStatement
+            | ImportStatement
+            | ClassDeclaration
+            | FunctionDeclaration
+            | GeneratorFunctionDeclaration
+            | IfStatement
+            | SwitchStatement
+            | ForStatement
+            | ForInStatement
+            | WhileStatement
+            | DoStatement
+            | TryStatement
+            | WithStatement
+            | BreakStatement
+            | ContinueStatement
+            | DebuggerStatement
+            | ReturnStatement
+            | ThrowStatement
+            | EmptyStatement
             | StatementIdentifier => {
                 stats.lloc.logical_lines += 1;
             }
@@ -659,10 +681,26 @@ impl Loc for JavascriptCode {
             Comment => {
                 add_cloc_lines(stats, start, end);
             }
-            ExpressionStatement | ExportStatement | ImportStatement | StatementBlock
-            | IfStatement | SwitchStatement | ForStatement | ForInStatement | WhileStatement
-            | DoStatement | TryStatement | WithStatement | BreakStatement | ContinueStatement
-            | DebuggerStatement | ReturnStatement | ThrowStatement | EmptyStatement
+            ExpressionStatement
+            | ExportStatement
+            | ImportStatement
+            | ClassDeclaration
+            | FunctionDeclaration
+            | GeneratorFunctionDeclaration
+            | IfStatement
+            | SwitchStatement
+            | ForStatement
+            | ForInStatement
+            | WhileStatement
+            | DoStatement
+            | TryStatement
+            | WithStatement
+            | BreakStatement
+            | ContinueStatement
+            | DebuggerStatement
+            | ReturnStatement
+            | ThrowStatement
+            | EmptyStatement
             | StatementIdentifier => {
                 stats.lloc.logical_lines += 1;
             }
@@ -685,10 +723,31 @@ impl Loc for TypescriptCode {
             Comment => {
                 add_cloc_lines(stats, start, end);
             }
-            ExpressionStatement | ExportStatement | ImportStatement | StatementBlock
-            | IfStatement | SwitchStatement | ForStatement | ForInStatement | WhileStatement
-            | DoStatement | TryStatement | WithStatement | BreakStatement | ContinueStatement
-            | DebuggerStatement | ReturnStatement | ThrowStatement | EmptyStatement
+            ExpressionStatement
+            | ExportStatement
+            | ImportStatement
+            | ClassDeclaration
+            | AbstractClassDeclaration
+            | AmbientDeclaration
+            | InterfaceDeclaration
+            | EnumDeclaration
+            | TypeAliasDeclaration
+            | FunctionDeclaration
+            | GeneratorFunctionDeclaration
+            | IfStatement
+            | SwitchStatement
+            | ForStatement
+            | ForInStatement
+            | WhileStatement
+            | DoStatement
+            | TryStatement
+            | WithStatement
+            | BreakStatement
+            | ContinueStatement
+            | DebuggerStatement
+            | ReturnStatement
+            | ThrowStatement
+            | EmptyStatement
             | StatementIdentifier => {
                 stats.lloc.logical_lines += 1;
             }
@@ -711,10 +770,30 @@ impl Loc for TsxCode {
             Comment => {
                 add_cloc_lines(stats, start, end);
             }
-            ExpressionStatement | ExportStatement | ImportStatement | StatementBlock
-            | IfStatement | SwitchStatement | ForStatement | ForInStatement | WhileStatement
-            | DoStatement | TryStatement | WithStatement | BreakStatement | ContinueStatement
-            | DebuggerStatement | ReturnStatement | ThrowStatement | EmptyStatement
+            ExpressionStatement
+            | ExportStatement
+            | ClassDeclaration
+            | AbstractClassDeclaration
+            | AmbientDeclaration
+            | InterfaceDeclaration
+            | EnumDeclaration
+            | TypeAliasDeclaration
+            | FunctionDeclaration
+            | GeneratorFunctionDeclaration
+            | IfStatement
+            | SwitchStatement
+            | ForStatement
+            | ForInStatement
+            | WhileStatement
+            | DoStatement
+            | TryStatement
+            | WithStatement
+            | BreakStatement
+            | ContinueStatement
+            | DebuggerStatement
+            | ReturnStatement
+            | ThrowStatement
+            | EmptyStatement
             | StatementIdentifier => {
                 stats.lloc.logical_lines += 1;
             }
@@ -864,18 +943,115 @@ impl Loc for JavaCode {
     }
 }
 
-implement_metric_trait!(
-    Loc,
-    PreprocCode,
-    CcommentCode,
-    KotlinCode,
-    ElixirCode,
-    ErlangCode,
-    GleamCode,
-    LuaCode,
-    GoCode,
-    CsharpCode
-);
+impl Loc for ElixirCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "comment" => add_cloc_lines(stats, start, end),
+            "source" | "block" | "body" | "arguments" | "do_block" | "after_block"
+            | "rescue_block" | "catch_block" | "else_block" | "map_content" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+impl Loc for ErlangCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "comment" => add_cloc_lines(stats, start, end),
+            "source_file" | "fun_decl" | "function_clause" | "clause_body" | "expr_args"
+            | "guard" | "guard_clause" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+impl Loc for GleamCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "comment" | "module_comment" | "statement_comment" => {
+                add_cloc_lines(stats, start, end);
+            }
+            "source_file"
+            | "function_parameters"
+            | "function_parameter"
+            | "function_body"
+            | "case_clauses"
+            | "case_clause"
+            | "case_clause_patterns"
+            | "case_clause_guard" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+impl Loc for LuaCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "comment" => add_cloc_lines(stats, start, end),
+            "program" | "block" | "parameters" | "function_parameters" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+impl Loc for GoCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "comment" => add_cloc_lines(stats, start, end),
+            "source_file"
+            | "block"
+            | "statement_list"
+            | "parameter_list"
+            | "field_declaration_list" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+impl Loc for KotlinCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "line_comment" | "block_comment" => add_cloc_lines(stats, start, end),
+            "shebang" => add_cloc_lines(stats, start, end),
+            "source_file"
+            | "class_body"
+            | "function_body"
+            | "block"
+            | "statements"
+            | "function_value_parameters"
+            | "lambda_parameters"
+            | "lambda_literal" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+impl Loc for CsharpCode {
+    fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
+        let (start, end) = init(node, stats, is_func_space, is_unit);
+
+        match node.kind() {
+            "comment" => add_cloc_lines(stats, start, end),
+            "compilation_unit" | "class_body" | "block" | "parameter_list" | "argument_list"
+            | "attribute_list" => {}
+            _ => record_code_line(stats, start),
+        }
+    }
+}
+
+implement_metric_trait!(Loc, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {
@@ -1596,25 +1772,25 @@ mod tests {
                     @r#"
                 {
                   "sloc": 5.0,
-                  "ploc": 1.0,
+                  "ploc": 2.0,
                   "lloc": 2.0,
-                  "cloc": 5.0,
-                  "blank": 0.0,
+                  "cloc": 2.0,
+                  "blank": 2.0,
                   "sloc_average": 5.0,
-                  "ploc_average": 1.0,
+                  "ploc_average": 2.0,
                   "lloc_average": 2.0,
-                  "cloc_average": 5.0,
-                  "blank_average": 0.0,
+                  "cloc_average": 2.0,
+                  "blank_average": 2.0,
                   "sloc_min": 5.0,
                   "sloc_max": 5.0,
-                  "cloc_min": 5.0,
-                  "cloc_max": 5.0,
-                  "ploc_min": 1.0,
-                  "ploc_max": 1.0,
+                  "cloc_min": 2.0,
+                  "cloc_max": 2.0,
+                  "ploc_min": 2.0,
+                  "ploc_max": 2.0,
                   "lloc_min": 2.0,
                   "lloc_max": 2.0,
-                  "blank_min": 0.0,
-                  "blank_max": 0.0
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -2450,12 +2626,12 @@ mod tests {
                   "ploc": 3.0,
                   "lloc": 3.0,
                   "cloc": 3.0,
-                  "blank": -1.0,
+                  "blank": 0.0,
                   "sloc_average": 0.6666666666666666,
                   "ploc_average": 1.0,
                   "lloc_average": 1.0,
                   "cloc_average": 1.0,
-                  "blank_average": -0.3333333333333333,
+                  "blank_average": 0.0,
                   "sloc_min": 1.0,
                   "sloc_max": 1.0,
                   "cloc_min": 0.0,
@@ -2586,12 +2762,12 @@ mod tests {
                 {
                   "sloc": 5.0,
                   "ploc": 5.0,
-                  "lloc": 6.0,
+                  "lloc": 4.0,
                   "cloc": 0.0,
                   "blank": 0.0,
                   "sloc_average": 2.5,
                   "ploc_average": 2.5,
-                  "lloc_average": 3.0,
+                  "lloc_average": 2.0,
                   "cloc_average": 0.0,
                   "blank_average": 0.0,
                   "sloc_min": 5.0,
@@ -2600,8 +2776,8 @@ mod tests {
                   "cloc_max": 0.0,
                   "ploc_min": 5.0,
                   "ploc_max": 5.0,
-                  "lloc_min": 5.0,
-                  "lloc_max": 5.0,
+                  "lloc_min": 3.0,
+                  "lloc_max": 3.0,
                   "blank_min": 0.0,
                   "blank_max": 0.0
                 }
@@ -2628,12 +2804,12 @@ mod tests {
                 {
                   "sloc": 5.0,
                   "ploc": 5.0,
-                  "lloc": 6.0,
+                  "lloc": 4.0,
                   "cloc": 0.0,
                   "blank": 0.0,
                   "sloc_average": 2.5,
                   "ploc_average": 2.5,
-                  "lloc_average": 3.0,
+                  "lloc_average": 2.0,
                   "cloc_average": 0.0,
                   "blank_average": 0.0,
                   "sloc_min": 5.0,
@@ -2642,8 +2818,8 @@ mod tests {
                   "cloc_max": 0.0,
                   "ploc_min": 5.0,
                   "ploc_max": 5.0,
-                  "lloc_min": 5.0,
-                  "lloc_max": 5.0,
+                  "lloc_min": 3.0,
+                  "lloc_max": 3.0,
                   "blank_min": 0.0,
                   "blank_max": 0.0
                 }
@@ -3501,12 +3677,12 @@ mod tests {
           "ploc": 7.0,
           "lloc": 2.0,
           "cloc": 6.0,
-          "blank": -5.0,
+          "blank": 1.0,
           "sloc_average": 2.0,
           "ploc_average": 2.3333333333333335,
           "lloc_average": 0.6666666666666666,
           "cloc_average": 2.0,
-          "blank_average": -1.6666666666666667,
+          "blank_average": 0.3333333333333333,
           "sloc_min": 6.0,
           "sloc_max": 6.0,
           "cloc_min": 2.0,
@@ -3538,26 +3714,26 @@ mod tests {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 3.0,
+                  "ploc": 3.0,
+                  "lloc": 3.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 0.0,
+                  "sloc_average": 1.5,
+                  "ploc_average": 1.5,
+                  "lloc_average": 1.5,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 0.0,
+                  "sloc_min": 3.0,
+                  "sloc_max": 3.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 3.0,
+                  "ploc_max": 3.0,
+                  "lloc_min": 3.0,
+                  "lloc_max": 3.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -3582,26 +3758,26 @@ fun factorial(n: Int): Int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
-                  "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
-                  "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
-                  "cloc_min": 0.0,
-                  "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "sloc": 8.0,
+                  "ploc": 4.0,
+                  "lloc": 4.0,
+                  "cloc": 4.0,
+                  "blank": 0.0,
+                  "sloc_average": 3.5,
+                  "ploc_average": 2.0,
+                  "lloc_average": 2.0,
+                  "cloc_average": 2.0,
+                  "blank_average": 0.0,
+                  "sloc_min": 7.0,
+                  "sloc_max": 7.0,
+                  "cloc_min": 3.0,
+                  "cloc_max": 3.0,
+                  "ploc_min": 4.0,
+                  "ploc_max": 4.0,
+                  "lloc_min": 4.0,
+                  "lloc_max": 4.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -3625,26 +3801,26 @@ fun factorial(n: Int): Int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 7.0,
+                  "ploc": 5.0,
+                  "lloc": 5.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 3.5,
+                  "ploc_average": 2.5,
+                  "lloc_average": 2.5,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 7.0,
+                  "sloc_max": 7.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 5.0,
+                  "ploc_max": 5.0,
+                  "lloc_min": 5.0,
+                  "lloc_max": 5.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -3675,26 +3851,26 @@ fun factorial(n: Int): Int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 14.0,
+                  "ploc": 12.0,
+                  "lloc": 12.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 7.0,
+                  "ploc_average": 6.0,
+                  "lloc_average": 6.0,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 14.0,
+                  "sloc_max": 14.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 12.0,
+                  "ploc_max": 12.0,
+                  "lloc_min": 12.0,
+                  "lloc_max": 12.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -3749,24 +3925,24 @@ fun factorial(n: Int): Int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 38.0,
+                  "ploc": 32.0,
+                  "lloc": 32.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.125,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 6.0,
+                  "sloc_average": 4.75,
+                  "ploc_average": 4.0,
+                  "lloc_average": 4.0,
                   "cloc_average": 0.0,
-                  "blank_average": 0.125,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 0.75,
+                  "sloc_min": 38.0,
+                  "sloc_max": 38.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
+                  "ploc_min": 32.0,
+                  "ploc_max": 32.0,
+                  "lloc_min": 32.0,
+                  "lloc_max": 32.0,
                   "blank_min": 6.0,
                   "blank_max": 6.0
                 }
@@ -3790,26 +3966,26 @@ end",
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 3.0,
+                  "ploc": 3.0,
+                  "lloc": 4.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
+                  "blank": 0.0,
                   "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "ploc_average": 1.5,
+                  "lloc_average": 2.0,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
+                  "blank_average": 0.0,
                   "sloc_min": 1.0,
                   "sloc_max": 1.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 1.0,
+                  "ploc_max": 1.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 1.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -3836,26 +4012,26 @@ end",
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
-                  "cloc": 0.0,
-                  "blank": 1.0,
+                  "sloc": 9.0,
+                  "ploc": 9.0,
+                  "lloc": 10.0,
+                  "cloc": 3.0,
+                  "blank": 0.0,
                   "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
-                  "cloc_average": 0.0,
-                  "blank_average": 0.5,
+                  "ploc_average": 4.5,
+                  "lloc_average": 5.0,
+                  "cloc_average": 1.5,
+                  "blank_average": 0.0,
                   "sloc_min": 1.0,
                   "sloc_max": 1.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 1.0,
+                  "ploc_max": 1.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 1.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -3879,26 +4055,26 @@ end",
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 7.0,
+                  "ploc": 5.0,
+                  "lloc": 6.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
+                  "blank": 2.0,
                   "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "ploc_average": 2.5,
+                  "lloc_average": 3.0,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
+                  "blank_average": 1.0,
                   "sloc_min": 1.0,
                   "sloc_max": 1.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 1.0,
+                  "ploc_max": 1.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 1.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -3929,26 +4105,26 @@ end",
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 14.0,
+                  "ploc": 12.0,
+                  "lloc": 13.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
+                  "blank": 2.0,
                   "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "ploc_average": 6.0,
+                  "lloc_average": 6.5,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
+                  "blank_average": 1.0,
                   "sloc_min": 1.0,
                   "sloc_max": 1.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 1.0,
+                  "ploc_max": 1.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 1.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4008,26 +4184,26 @@ end",
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 5.0,
+                  "ploc": 34.0,
+                  "lloc": 41.0,
                   "cloc": 0.0,
-                  "blank": 7.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 0.0,
+                  "sloc_average": 2.142857142857143,
+                  "ploc_average": 2.4285714285714284,
+                  "lloc_average": 2.9285714285714284,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
+                  "blank_average": 0.0,
                   "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "sloc_max": 8.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 1.0,
+                  "ploc_max": 8.0,
+                  "lloc_min": 1.0,
+                  "lloc_max": 9.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4049,26 +4225,26 @@ end",
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 3.0,
+                  "ploc": 3.0,
+                  "lloc": 3.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 0.0,
+                  "sloc_average": 1.5,
+                  "ploc_average": 1.5,
+                  "lloc_average": 1.5,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 0.0,
+                  "sloc_min": 3.0,
+                  "sloc_max": 3.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 3.0,
+                  "ploc_max": 3.0,
+                  "lloc_min": 3.0,
+                  "lloc_max": 3.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4095,26 +4271,26 @@ func factorial(n int) int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
-                  "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
-                  "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
-                  "cloc_min": 0.0,
-                  "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "sloc": 10.0,
+                  "ploc": 6.0,
+                  "lloc": 6.0,
+                  "cloc": 4.0,
+                  "blank": 0.0,
+                  "sloc_average": 4.5,
+                  "ploc_average": 3.0,
+                  "lloc_average": 3.0,
+                  "cloc_average": 2.0,
+                  "blank_average": 0.0,
+                  "sloc_min": 9.0,
+                  "sloc_max": 9.0,
+                  "cloc_min": 3.0,
+                  "cloc_max": 3.0,
+                  "ploc_min": 6.0,
+                  "ploc_max": 6.0,
+                  "lloc_min": 6.0,
+                  "lloc_max": 6.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4138,26 +4314,26 @@ func factorial(n int) int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 7.0,
+                  "ploc": 5.0,
+                  "lloc": 5.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 3.5,
+                  "ploc_average": 2.5,
+                  "lloc_average": 2.5,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 7.0,
+                  "sloc_max": 7.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 5.0,
+                  "ploc_max": 5.0,
+                  "lloc_min": 5.0,
+                  "lloc_max": 5.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -4188,26 +4364,26 @@ func factorial(n int) int {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 14.0,
+                  "ploc": 12.0,
+                  "lloc": 12.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.5,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 7.0,
+                  "ploc_average": 6.0,
+                  "lloc_average": 6.0,
                   "cloc_average": 0.0,
-                  "blank_average": 0.5,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 14.0,
+                  "sloc_max": 14.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 12.0,
+                  "ploc_max": 12.0,
+                  "lloc_min": 12.0,
+                  "lloc_max": 12.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -4268,26 +4444,26 @@ func (c *Calculator) ClearHistory() {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 44.0,
+                  "ploc": 37.0,
+                  "lloc": 37.0,
                   "cloc": 0.0,
                   "blank": 7.0,
-                  "sloc_average": 0.875,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "sloc_average": 4.25,
+                  "ploc_average": 4.625,
+                  "lloc_average": 4.625,
                   "cloc_average": 0.0,
                   "blank_average": 0.875,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "sloc_min": 3.0,
+                  "sloc_max": 8.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 3.0,
+                  "ploc_max": 8.0,
+                  "lloc_min": 3.0,
+                  "lloc_max": 8.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4309,26 +4485,26 @@ func (c *Calculator) ClearHistory() {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 3.0,
+                  "ploc": 3.0,
+                  "lloc": 3.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 1.0,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 0.0,
+                  "sloc_average": 3.0,
+                  "ploc_average": 3.0,
+                  "lloc_average": 3.0,
                   "cloc_average": 0.0,
-                  "blank_average": 1.0,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 0.0,
+                  "sloc_min": 3.0,
+                  "sloc_max": 3.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 3.0,
+                  "ploc_max": 3.0,
+                  "lloc_min": 3.0,
+                  "lloc_max": 3.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4355,26 +4531,26 @@ int Factorial(int n) {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
-                  "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 1.0,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
-                  "cloc_average": 0.0,
-                  "blank_average": 1.0,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
-                  "cloc_min": 0.0,
-                  "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "sloc": 10.0,
+                  "ploc": 6.0,
+                  "lloc": 6.0,
+                  "cloc": 4.0,
+                  "blank": 0.0,
+                  "sloc_average": 10.0,
+                  "ploc_average": 6.0,
+                  "lloc_average": 6.0,
+                  "cloc_average": 4.0,
+                  "blank_average": 0.0,
+                  "sloc_min": 10.0,
+                  "sloc_max": 10.0,
+                  "cloc_min": 4.0,
+                  "cloc_max": 4.0,
+                  "ploc_min": 6.0,
+                  "ploc_max": 6.0,
+                  "lloc_min": 6.0,
+                  "lloc_max": 6.0,
+                  "blank_min": 0.0,
+                  "blank_max": 0.0
                 }
                 "#
                 );
@@ -4398,26 +4574,26 @@ int Factorial(int n) {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 7.0,
+                  "ploc": 5.0,
+                  "lloc": 5.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 1.0,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 7.0,
+                  "ploc_average": 5.0,
+                  "lloc_average": 5.0,
                   "cloc_average": 0.0,
-                  "blank_average": 1.0,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 2.0,
+                  "sloc_min": 7.0,
+                  "sloc_max": 7.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 5.0,
+                  "ploc_max": 5.0,
+                  "lloc_min": 5.0,
+                  "lloc_max": 5.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -4448,26 +4624,26 @@ int Factorial(int n) {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 14.0,
+                  "ploc": 12.0,
+                  "lloc": 12.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 1.0,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 2.0,
+                  "sloc_average": 14.0,
+                  "ploc_average": 12.0,
+                  "lloc_average": 12.0,
                   "cloc_average": 0.0,
-                  "blank_average": 1.0,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 2.0,
+                  "sloc_min": 14.0,
+                  "sloc_max": 14.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
-                  "blank_min": 1.0,
-                  "blank_max": 1.0
+                  "ploc_min": 12.0,
+                  "ploc_max": 12.0,
+                  "lloc_min": 12.0,
+                  "lloc_max": 12.0,
+                  "blank_min": 2.0,
+                  "blank_max": 2.0
                 }
                 "#
                 );
@@ -4522,24 +4698,24 @@ int Factorial(int n) {
                     metric.loc,
                     @r#"
                 {
-                  "sloc": 1.0,
-                  "ploc": 0.0,
-                  "lloc": 0.0,
+                  "sloc": 38.0,
+                  "ploc": 32.0,
+                  "lloc": 32.0,
                   "cloc": 0.0,
-                  "blank": 1.0,
-                  "sloc_average": 0.125,
-                  "ploc_average": 0.0,
-                  "lloc_average": 0.0,
+                  "blank": 6.0,
+                  "sloc_average": 4.75,
+                  "ploc_average": 4.0,
+                  "lloc_average": 4.0,
                   "cloc_average": 0.0,
-                  "blank_average": 0.125,
-                  "sloc_min": 1.0,
-                  "sloc_max": 1.0,
+                  "blank_average": 0.75,
+                  "sloc_min": 38.0,
+                  "sloc_max": 38.0,
                   "cloc_min": 0.0,
                   "cloc_max": 0.0,
-                  "ploc_min": 0.0,
-                  "ploc_max": 0.0,
-                  "lloc_min": 0.0,
-                  "lloc_max": 0.0,
+                  "ploc_min": 32.0,
+                  "ploc_max": 32.0,
+                  "lloc_min": 32.0,
+                  "lloc_max": 32.0,
                   "blank_min": 6.0,
                   "blank_max": 6.0
                 }

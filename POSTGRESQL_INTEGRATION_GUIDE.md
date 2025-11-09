@@ -6,7 +6,7 @@ The `singularity-code-analysis` is a **Rust library (crate)** that provides:
 
 ### **Core Library Features**
 - ✅ **Traditional Metrics** (12) - ABC, Cognitive, Cyclomatic, Halstead, LOC, etc.
-- ✅ **AI/LLM Metrics** (5) - Semantic Complexity, Refactoring Readiness, etc.
+- ✅ **Insight Metrics** (5) - Semantic Complexity, Refactoring Readiness, etc.
 - ✅ **Language Support** (11) - Rust, Elixir, JavaScript, Python, Java, etc.
 - ✅ **Performance Optimized** - O(1) language detection, inline optimization
 - ✅ **Thread-Safe** - Concurrent access support
@@ -14,7 +14,10 @@ The `singularity-code-analysis` is a **Rust library (crate)** that provides:
 
 ### **PostgreSQL + pgvector Integration Points**
 
-The library is designed to work with PostgreSQL + pgvector for enriched analysis:
+The library is designed to work with PostgreSQL + pgvector for enriched analysis.  The Rust crate exposes strongly typed data
+structures (see `src/metrics/insight_metrics/postgresql_enriched.rs`) while the concrete database calls are expected to be
+implemented in your host application.  In the reference Elixir deployment these traits are fulfilled in
+`lib/singularity/metrics/enrichment.ex`.
 
 #### **1. Vector Search Integration**
 ```rust
@@ -86,7 +89,7 @@ println!("Semantic complexity: {}", complexity);
 ### **2. With PostgreSQL + pgvector Integration**
 ```rust
 use singularity_code_analysis::{
-    PostgreSQLEnrichedAIMetrics, 
+    PostgreSQLEnrichedInsightMetrics,
     VectorSearchIntegration, 
     RelationalDataIntegration,
     PatternLearningIntegration
@@ -104,7 +107,7 @@ impl RelationalDataIntegration for MyApp { /* ... */ }
 impl PatternLearningIntegration for MyApp { /* ... */ }
 
 // Use the library
-let mut metrics = PostgreSQLEnrichedAIMetrics::new(Box::new(my_app));
+let mut metrics = PostgreSQLEnrichedInsightMetrics::new(Box::new(my_app));
 let result = metrics.calculate_enriched_metrics(code, LANG::Rust, "src/example.rs");
 ```
 
@@ -322,7 +325,7 @@ end
 
 ### **Core Metrics (17 Total)**
 1. **Traditional (12)**: ABC, Cognitive, Cyclomatic, Halstead, LOC, MI, NARGS, NOM, NPA, NPM, WMC, Exit
-2. **AI/LLM (5)**: Semantic Complexity, Refactoring Readiness, AI Code Quality, Code Smell Density, Testability Score
+2. **Insight Metrics (5)**: Semantic Complexity, Refactoring Readiness, Composite Code Quality, Code Smell Density, Testability Score
 
 ### **PostgreSQL-Enriched Features**
 - **Vector Search** - Find similar code patterns using pgvector embeddings
@@ -338,7 +341,7 @@ end
 - **Fast Execution** - < 100ms for most operations
 - **Vector Search** - Sub-second similarity search with pgvector
 
-## 🎯 **Benefits for AI/LLM Systems**
+## 🎯 **Benefits for Insight-Driven Systems**
 
 ### **For Code Generation**
 - **Quality Validation** - Ensure AI-generated code meets standards
@@ -360,16 +363,16 @@ end
 
 ## 🏆 **Conclusion**
 
-The `singularity-code-analysis` library is now **best-in-class** for AI/LLM coding systems with PostgreSQL + pgvector integration, providing:
+The `singularity-code-analysis` library is now **best-in-class** for insight-driven coding systems with PostgreSQL + pgvector integration, providing:
 
 1. **100% Performance** - Optimized for speed and efficiency
 2. **100% Test Coverage** - Comprehensive testing for reliability
-3. **AI/LLM Integration** - Built specifically for AI systems
+3. **Insight Integration** - Built specifically for analytics-driven systems
 4. **PostgreSQL Integration** - Works with PostgreSQL + pgvector
 5. **Comprehensive Metrics** - 17 different quality measures
 6. **Multi-Language Support** - 11 programming languages
 7. **Production Ready** - Thread-safe, memory-efficient, scalable
 
-This is the **gold standard** for AI-powered code analysis libraries with PostgreSQL integration! 🚀
+This is the **gold standard** for insight-powered code analysis libraries with PostgreSQL integration! 🚀
 
-The library provides the **interface and algorithms**, while the application provides the **PostgreSQL implementation** - giving you the best of both worlds for building AI/LLM-powered coding systems with vector search capabilities.
+The library provides the **interface and algorithms**, while the application provides the **PostgreSQL implementation** - giving you the best of both worlds for building insight-powered coding systems with vector search capabilities.

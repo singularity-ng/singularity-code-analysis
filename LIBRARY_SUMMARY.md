@@ -28,7 +28,7 @@ A **best-in-class Rust library** for AI/LLM-powered code analysis that integrate
 - **Testability Score** - How easy code is to test
 
 ### **3. PostgreSQL + pgvector Integration (NEW!)**
-- **PostgreSQLEnrichedAIMetrics** - Full integration with PostgreSQL + pgvector
+- **PostgreSQLEnrichedInsightMetrics** - Full integration with PostgreSQL + pgvector
 - **Vector Search** - Find similar code patterns using 2560-dim embeddings (Qodo + Jina v3)
 - **Relational Analysis** - Understand code relationships and dependencies
 - **Historical Trends** - Track complexity and quality over time
@@ -62,10 +62,10 @@ A **best-in-class Rust library** for AI/LLM-powered code analysis that integrate
 ```
 src/
 ├── metrics/
-│   ├── ai_metrics/
+│   ├── insight_metrics/
 │   │   ├── semantic_complexity.rs      # Basic semantic analysis
 │   │   ├── refactoring_readiness.rs    # Refactoring assessment
-│   │   ├── ai_code_quality.rs          # AI code quality metrics
+│   │   ├── composite_code_quality.rs   # Composite code quality metrics
 │   │   ├── code_smell_density.rs       # Code smell detection
 │   │   ├── testability_score.rs        # Testability assessment
 │   │   └── postgresql_enriched.rs      # PostgreSQL + pgvector integration
@@ -113,7 +113,7 @@ println!("Semantic complexity: {}", complexity);
 ### **2. With PostgreSQL + pgvector Integration**
 ```rust
 use singularity_code_analysis::{
-    PostgreSQLEnrichedAIMetrics, 
+    PostgreSQLEnrichedInsightMetrics,
     VectorSearchIntegration, 
     RelationalDataIntegration,
     PatternLearningIntegration
@@ -131,7 +131,7 @@ impl RelationalDataIntegration for MyApp { /* ... */ }
 impl PatternLearningIntegration for MyApp { /* ... */ }
 
 // Use the library
-let mut metrics = PostgreSQLEnrichedAIMetrics::new(Box::new(my_app));
+let mut metrics = PostgreSQLEnrichedInsightMetrics::new(Box::new(my_app));
 let result = metrics.calculate_enriched_metrics(code, LANG::Rust, "src/example.rs");
 ```
 

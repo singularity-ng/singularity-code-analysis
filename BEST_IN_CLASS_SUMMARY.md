@@ -65,7 +65,7 @@ The singularity code analyzer is now **best-in-class** for AI/LLM coding systems
 - **Refactoring Opportunities** - Suggests intelligent refactoring
 
 #### **AI Code Generation Support**
-- **AI Code Quality Assessment** - Validates AI-generated code quality
+- **Composite Code Quality Assessment** - Validates AI-generated code quality
 - **Testability Scoring** - Guides AI test generation
 - **Refactoring Readiness** - Predicts AI refactoring success
 - **Code Smell Detection** - Identifies issues AI should fix

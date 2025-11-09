@@ -35,11 +35,11 @@
 //! - **NEXITS**: Exit points
 //! - **NARGS**: Function arguments
 //!
-//! ### AI-Powered Metrics (NEW)
+//! ### Insight Metrics (NEW)
 //! - **Semantic Complexity**: Language-aware complexity analysis
 //! - **Code Smell Density**: Anti-pattern detection
 //! - **Refactoring Readiness**: Opportunity scoring
-//! - **AI Code Quality**: Weighted quality factors
+//! - **Composite Code Quality**: Weighted quality factors
 //! - **Testability Score**: Test-ability prediction
 //! - **Type Safety**: Type coverage & safety analysis
 //! - **Dependency Coupling**: Inter-module coupling strength

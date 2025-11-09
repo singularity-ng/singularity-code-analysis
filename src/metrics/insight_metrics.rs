@@ -1,8 +1,8 @@
-//! AI/LLM-Powered Metrics for Best-in-Class Code Analysis
+//! Insight-driven metrics for best-in-class code analysis
 //!
-//! This module provides advanced AI-powered metrics that complement
-//! traditional code analysis metrics with semantic understanding,
-//! pattern recognition, and intelligent insights.
+//! This module provides complementary metrics that build on the
+//! traditional code analysis suite with semantic understanding,
+//! pattern recognition, and deep structural insights.
 //!
 //! ## Metric Categories
 //!
@@ -12,7 +12,7 @@
 //! - `code_smell_density` - Detects and quantifies code smells
 //!
 //! ### Quality & Architecture
-//! - `ai_code_quality` - Composite quality score with weighted factors
+//! - `composite_code_quality` - Weighted quality score with factor breakdowns
 //! - `testability_score` - Predicts test-ability and modularity
 //! - `type_safety` - Type coverage and safety analysis
 //!
@@ -23,8 +23,9 @@
 //! ### Database Integration
 //! - `postgresql_enriched` - PostgreSQL-backed pattern learning
 
-pub mod ai_code_quality;
 pub mod code_smell_density;
+pub mod composite_code_quality;
+pub mod database_enriched;
 pub mod dependency_coupling;
 pub mod error_handling;
 pub mod postgresql_enriched;
@@ -33,8 +34,9 @@ pub mod semantic_complexity;
 pub mod testability_score;
 pub mod type_safety;
 
-pub use ai_code_quality::*;
 pub use code_smell_density::*;
+pub use composite_code_quality::*;
+pub use database_enriched::*;
 pub use dependency_coupling::*;
 pub use error_handling::*;
 pub use postgresql_enriched::*;

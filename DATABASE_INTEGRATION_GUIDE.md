@@ -83,7 +83,7 @@ println!("Semantic complexity: {}", complexity);
 ### **2. With Database Integration**
 ```rust
 use singularity_code_analysis::{
-    DatabaseEnrichedAIMetrics, 
+    DatabaseEnrichedInsightMetrics,
     DatabaseIntegration, 
     GraphDatabaseIntegration,
     VectorSearchIntegration
@@ -102,7 +102,7 @@ impl GraphDatabaseIntegration for MyApp { /* ... */ }
 impl VectorSearchIntegration for MyApp { /* ... */ }
 
 // Use the library
-let mut metrics = DatabaseEnrichedAIMetrics::new(Box::new(my_app));
+let mut metrics = DatabaseEnrichedInsightMetrics::new(Box::new(my_app));
 let result = metrics.calculate_enriched_metrics(code, LANG::Rust, "src/example.rs");
 ```
 
@@ -203,7 +203,7 @@ end
 
 ### **Core Metrics (17 Total)**
 1. **Traditional (12)**: ABC, Cognitive, Cyclomatic, Halstead, LOC, MI, NARGS, NOM, NPA, NPM, WMC, Exit
-2. **AI/LLM (5)**: Semantic Complexity, Refactoring Readiness, AI Code Quality, Code Smell Density, Testability Score
+2. **Insight Metrics (5)**: Semantic Complexity, Refactoring Readiness, Composite Code Quality, Code Smell Density, Testability Score
 
 ### **Database-Enriched Features**
 - **Vector Search** - Find similar code patterns using embeddings

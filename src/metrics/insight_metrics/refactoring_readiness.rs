@@ -1,4 +1,4 @@
-//! Refactoring Readiness Score for AI/LLM Systems
+//! Refactoring readiness score for insight-driven analysis
 
 use serde::{Deserialize, Serialize};
 

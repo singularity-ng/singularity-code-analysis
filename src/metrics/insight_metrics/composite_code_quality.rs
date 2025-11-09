@@ -1,10 +1,10 @@
-//! AI-Generated Code Quality Metric
+//! Composite code quality metric with weighted factors
 
 use serde::{Deserialize, Serialize};
 
-/// AI code quality statistics
+/// Composite code quality statistics
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AICodeQualityStats {
+pub struct CompositeCodeQualityStats {
     pub quality_score: f64,
     pub quality_factors: Vec<QualityFactor>,
 }
@@ -17,7 +17,7 @@ pub struct QualityFactor {
     pub weight: f64,
 }
 
-impl Default for AICodeQualityStats {
+impl Default for CompositeCodeQualityStats {
     fn default() -> Self {
         Self {
             quality_score: 0.0,
@@ -26,7 +26,7 @@ impl Default for AICodeQualityStats {
     }
 }
 
-impl AICodeQualityStats {
+impl CompositeCodeQualityStats {
     pub fn calculate_quality_score(&mut self, code: &str) -> f64 {
         let mut total_score = 0.0;
         let mut total_weight = 0.0;

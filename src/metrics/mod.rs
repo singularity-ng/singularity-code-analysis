@@ -11,6 +11,6 @@ pub mod npa;
 pub mod npm;
 pub mod wmc;
 
-// AI/LLM-Powered Metrics for Best-in-Class Code Analysis
-#[cfg(feature = "ai-metrics")]
-pub mod ai_metrics;
+// Insight-driven metrics that complement the core analysis suite
+#[cfg(feature = "insight-metrics")]
+pub mod insight_metrics;

@@ -1,4 +1,4 @@
-//! Semantic Complexity Metric for AI/LLM Systems
+//! Semantic complexity metric for insight-driven analysis
 
 use crate::langs::LANG;
 use serde::{Deserialize, Serialize};

@@ -115,9 +115,37 @@ where
     fn compute(node: &Node, stats: &mut Stats);
 }
 
+#[inline(always)]
+fn call_matches_any(node: &Node, names: &[&str]) -> bool {
+    if node.kind() != "call" {
+        return false;
+    }
+
+    if let Some(target) = node.child(0) {
+        match target.kind() {
+            "identifier" | "atom" | "operator_identifier" => {
+                analysis_context::node_text_equals_any(&target, names)
+            }
+            "dot" | "remote" => {
+                for idx in (0..target.child_count()).rev() {
+                    if let Some(child) = target.child(idx) {
+                        if matches!(child.kind(), "identifier" | "atom" | "operator_identifier") {
+                            return analysis_context::node_text_equals_any(&child, names);
+                        }
+                    }
+                }
+                false
+            }
+            _ => false,
+        }
+    } else {
+        false
+    }
+}
+
 impl Exit for PythonCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Python::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
@@ -125,7 +153,7 @@ impl Exit for PythonCode {
 
 impl Exit for MozjsCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Mozjs::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
@@ -133,7 +161,7 @@ impl Exit for MozjsCode {
 
 impl Exit for JavascriptCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Javascript::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
@@ -141,7 +169,7 @@ impl Exit for JavascriptCode {
 
 impl Exit for TypescriptCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Typescript::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
@@ -149,7 +177,7 @@ impl Exit for TypescriptCode {
 
 impl Exit for TsxCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Tsx::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
@@ -157,10 +185,8 @@ impl Exit for TsxCode {
 
 impl Exit for RustCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(
-            node.kind_id().into(),
-            Rust::ReturnExpression | Rust::TryExpression
-        ) || Self::is_func(node) && node.child_by_field_name("return_type").is_some()
+        if matches!(node.kind(), "return_expression" | "try_expression")
+            || Self::is_func(node) && node.child_by_field_name("return_type").is_some()
         {
             stats.exit += 1;
         }
@@ -169,7 +195,7 @@ impl Exit for RustCode {
 
 impl Exit for CppCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Cpp::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
@@ -177,24 +203,87 @@ impl Exit for CppCode {
 
 impl Exit for JavaCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if matches!(node.kind_id().into(), Java::ReturnStatement) {
+        if node.kind() == "return_statement" {
             stats.exit += 1;
         }
     }
 }
 
-implement_metric_trait!(
-    Exit,
-    KotlinCode,
-    PreprocCode,
-    CcommentCode,
-    ElixirCode,
-    ErlangCode,
-    GleamCode,
-    LuaCode,
-    GoCode,
-    CsharpCode
-);
+impl Exit for ElixirCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if call_matches_any(node, &["return", "raise", "throw", "exit", "halt"]) {
+            stats.exit += 1;
+        }
+    }
+}
+
+impl Exit for ErlangCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if call_matches_any(node, &["exit", "throw", "error"]) {
+            stats.exit += 1;
+        }
+    }
+}
+
+impl Exit for GleamCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if matches!(node.kind(), "panic" | "todo") {
+            stats.exit += 1;
+        }
+    }
+}
+
+impl Exit for LuaCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if matches!(node.kind(), "return_statement" | "break_statement") {
+            stats.exit += 1;
+        }
+    }
+}
+
+impl Exit for GoCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if matches!(
+            node.kind(),
+            "return_statement"
+                | "break_statement"
+                | "continue_statement"
+                | "fallthrough_statement"
+                | "goto_statement"
+        ) {
+            stats.exit += 1;
+        }
+    }
+}
+
+impl Exit for KotlinCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if matches!(
+            node.kind(),
+            "return_expression" | "throw_expression" | "jump_expression"
+        ) {
+            stats.exit += 1;
+        }
+    }
+}
+
+impl Exit for CsharpCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        if matches!(
+            node.kind(),
+            "return_statement"
+                | "throw_statement"
+                | "throw_expression"
+                | "break_statement"
+                | "continue_statement"
+                | "goto_statement"
+        ) {
+            stats.exit += 1;
+        }
+    }
+}
+
+implement_metric_trait!(Exit, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {
@@ -572,10 +661,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 1.0,
+                  "average": 1.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -598,10 +687,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -624,10 +713,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 4.0,
+                  "average": 4.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 4.0
                 }
                 "#
                 );
@@ -651,10 +740,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 1.0,
+                  "average": 1.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -675,10 +764,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -688,23 +777,19 @@ mod tests {
 
     #[test]
     fn lua_exit_single_return() {
-        check_metrics::<LuaParser>(
-            "function add(a, b) return a + b end",
-            "foo.lua",
-            |metric| {
-                insta::assert_json_snapshot!(
-                    metric.nexits,
-                    @r#"
-                {
-                  "sum": 0.0,
-                  "average": 0.0,
-                  "min": 0.0,
-                  "max": 0.0
-                }
-                "#
-                );
-            },
-        );
+        check_metrics::<LuaParser>("function add(a, b) return a + b end", "foo.lua", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nexits,
+                @r#"
+            {
+              "sum": 1.0,
+              "average": 0.5,
+              "min": 0.0,
+              "max": 1.0
+            }
+            "#
+            );
+        });
     }
 
     #[test]
@@ -722,10 +807,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 2.0,
+                  "average": 1.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -748,10 +833,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 4.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 4.0
                 }
                 "#
                 );
@@ -774,10 +859,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 2.0,
+                  "average": 0.5,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -817,10 +902,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 1.0,
+                  "average": 1.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -843,10 +928,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -869,10 +954,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 4.0,
+                  "average": 4.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 4.0
                 }
                 "#
                 );
@@ -895,10 +980,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 2.0,
+                  "average": 2.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 2.0
                 }
                 "#
                 );
@@ -919,10 +1004,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
-                  "average": 0.0,
+                  "sum": 1.0,
+                  "average": 1.0,
                   "min": 0.0,
-                  "max": 0.0
+                  "max": 1.0
                 }
                 "#
                 );
@@ -940,10 +1025,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
+                  "sum": 1.0,
                   "average": null,
-                  "min": 0.0,
-                  "max": 0.0
+                  "min": 1.0,
+                  "max": 1.0
                 }
                 "#
                 );
@@ -966,10 +1051,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
+                  "sum": 2.0,
                   "average": null,
-                  "min": 0.0,
-                  "max": 0.0
+                  "min": 2.0,
+                  "max": 2.0
                 }
                 "#
                 );
@@ -992,10 +1077,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
+                  "sum": 4.0,
                   "average": null,
-                  "min": 0.0,
-                  "max": 0.0
+                  "min": 4.0,
+                  "max": 4.0
                 }
                 "#
                 );
@@ -1016,10 +1101,10 @@ mod tests {
                     metric.nexits,
                     @r#"
                 {
-                  "sum": 0.0,
+                  "sum": 2.0,
                   "average": null,
-                  "min": 0.0,
-                  "max": 0.0
+                  "min": 2.0,
+                  "max": 2.0
                 }
                 "#
                 );
@@ -1029,22 +1114,18 @@ mod tests {
 
     #[test]
     fn csharp_exit_expression_body() {
-        check_metrics::<CsharpParser>(
-            "int Square(int x) => x * x;",
-            "foo.cs",
-            |metric| {
-                insta::assert_json_snapshot!(
-                    metric.nexits,
-                    @r###"
+        check_metrics::<CsharpParser>("int Square(int x) => x * x;", "foo.cs", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nexits,
+                @r###"
                     {
                       "sum": 0.0,
                       "average": null,
                       "min": 0.0,
                       "max": 0.0
                     }"###
-                );
-            },
-        );
+            );
+        });
     }
 
     #[test]
@@ -1154,6 +1235,205 @@ mod tests {
                   "max": 0.0
                 }
                 "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn elixir_exit_calls() {
+        check_metrics::<ElixirParser>(
+            "
+            defmodule Sample do
+              def run() do
+                raise \"boom\"
+                Process.exit(self(), :normal)
+              end
+            end
+            ",
+            "sample.ex",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 2.0,
+                      "min": 0.0,
+                      "max": 2.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn erlang_exit_calls() {
+        check_metrics::<ErlangParser>(
+            "
+            -module(sample).
+            -export([run/1]).
+            run(N) ->
+                erlang:exit(N),
+                exit(N),
+                throw(N).
+            ",
+            "sample.erl",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 3.0,
+                      "average": 1.5,
+                      "min": 0.0,
+                      "max": 3.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn gleam_exit_calls() {
+        check_metrics::<GleamParser>(
+            "
+            pub fn fail() {
+              panic as \"panic\"
+              todo as \"later\"
+            }
+            ",
+            "sample.gleam",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 4.0,
+                      "average": 4.0,
+                      "min": 0.0,
+                      "max": 4.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_exit_statements() {
+        check_metrics::<LuaParser>(
+            "
+            function run()
+              for i = 1, 3 do
+                break
+              end
+              return 1
+            end
+            ",
+            "sample.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 1.0,
+                      "min": 0.0,
+                      "max": 2.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_exit_statements() {
+        check_metrics::<GoParser>(
+            "
+            func run(x int) int {
+                for i := 0; i < x; i++ {
+                    if i == 2 {
+                        break
+                    }
+                    continue
+                }
+                goto done
+            done:
+                return x
+            }
+            ",
+            "sample.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 4.0,
+                      "average": 4.0,
+                      "min": 0.0,
+                      "max": 4.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_exit_statements() {
+        check_metrics::<KotlinParser>(
+            "
+            fun run(values: List<Int>): Int {
+                for (v in values) {
+                    if (v < 0) {
+                        break
+                    }
+                }
+                throw IllegalStateException()
+            }
+            ",
+            "sample.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 1.0,
+                      "average": 1.0,
+                      "min": 0.0,
+                      "max": 1.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_exit_statements() {
+        check_metrics::<CsharpParser>(
+            "
+            class Sample {
+                int Run(int value) {
+                    if (value < 0) {
+                        throw new System.Exception();
+                    }
+                    for (var i = 0; i < value; i++) {
+                        break;
+                    }
+                    return value;
+                }
+            }
+            ",
+            "sample.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 3.0,
+                      "average": 3.0,
+                      "min": 0.0,
+                      "max": 3.0
+                    }"###
                 );
             },
         );

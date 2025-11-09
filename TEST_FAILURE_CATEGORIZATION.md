@@ -421,7 +421,7 @@ cargo test --lib 2>&1 | tail -5
 | **ROOT_CAUSE_SUMMARY.md** | Summary of the primary cognitive.rs bug |
 | **BOOLEAN_OPERATOR_INVESTIGATION.md** | Deep analysis of Python boolean operator limitation |
 | **TEST_FAILURE_ANALYSIS.md** | Original detailed failure analysis |
-| **AI_METRICS_ANALYSIS.md** | Analysis of semantic complexity metrics |
+| **INSIGHT_METRICS_ANALYSIS.md** | Analysis of semantic complexity metrics |
 
 ---
 

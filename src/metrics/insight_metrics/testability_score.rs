@@ -1,4 +1,4 @@
-//! Testability Score Metric for AI/LLM Systems
+//! Testability score metric for insight-driven analysis
 
 use serde::{Deserialize, Serialize};
 

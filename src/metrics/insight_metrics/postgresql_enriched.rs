@@ -1,38 +1,25 @@
-//! PostgreSQL + pgvector Enriched AI Metrics - Type Definitions
+//! PostgreSQL + pgvector enriched insight metrics type definitions.
 //!
-//! This module defines data structures for PostgreSQL-enriched AI metrics.
-//!
-//! ## Implementation Note
-//!
-//! **Actual implementations have been moved to Elixir** to leverage:
-//! - Ecto connection pools for efficient database access
-//! - pgvector semantic search via PostgreSQL
-//! - Pattern matching and transformation
-//!
-//! See: `lib/singularity/metrics/enrichment.ex` in the main Singularity application
-//!
-//! Functions previously stubbed here are now fully implemented in Elixir:
-//! - `find_similar_patterns()` - pgvector semantic search
-//! - `get_metric_history()` - Historical metrics queries
-//! - `get_refactoring_patterns()` - Refactoring pattern library
-//! - `get_language_benchmarks()` - Language-specific benchmarks
-//! - `get_code_relationships()` - Code relationship graph queries
-//!
-//! This Rust module serves as a type definition layer for documentation
-//! and ensures type safety across language boundaries via NIFs.
+//! The structures in this module model the payloads exchanged with a
+//! PostgreSQL/pgvector backend.  They do not execute database calls on
+//! their own—those live in the host integration layer (see
+//! `POSTGRESQL_INTEGRATION_GUIDE.md` for wiring details).  Keeping the
+//! types colocated with the rest of the insight metrics ensures that the
+//! Rust <-> BEAM FFI boundary remains strongly typed even when the actual
+//! queries are implemented elsewhere.
 
 use crate::langs::LANG;
 use std::collections::HashMap;
 
-/// PostgreSQL-enriched AI metrics that leverage vector search and relational data
+/// PostgreSQL-enriched insight metrics that leverage vector search and relational data
 #[derive(Debug, Clone, Default)]
-pub struct PostgreSQLEnrichedAIMetrics {
+pub struct PostgreSQLEnrichedInsightMetrics {
     /// Semantic complexity with database patterns
     pub semantic_complexity: PostgreSQLSemanticComplexity,
     /// Refactoring readiness with historical data
     pub refactoring_readiness: PostgreSQLRefactoringReadiness,
-    /// AI code quality with learned patterns
-    pub ai_code_quality: PostgreSQLAICodeQuality,
+    /// Composite code quality with learned patterns
+    pub composite_code_quality: PostgreSQLCompositeCodeQuality,
     /// Code smell density with pattern database
     pub code_smell_density: PostgreSQLCodeSmellDensity,
     /// Testability score with historical test data
@@ -86,7 +73,7 @@ pub enum PatternType {
     CodeSmell,
     BestPractice,
     RefactoringOpportunity,
-    AIGeneratedPattern,
+    SynthesizedPattern,
     LearnedPattern,
 }
 
@@ -168,9 +155,9 @@ pub struct PostgreSQLRefactoringPattern {
     pub tags: Vec<String>,
 }
 
-/// PostgreSQL-enriched AI code quality
+/// PostgreSQL-enriched composite code quality
 #[derive(Debug, Clone)]
-pub struct PostgreSQLAICodeQuality {
+pub struct PostgreSQLCompositeCodeQuality {
     pub quality_score: f64,
     /// Quality factors with database context
     pub quality_factors: Vec<PostgreSQLQualityFactor>,
@@ -378,7 +365,7 @@ impl Default for PostgreSQLRefactoringReadiness {
     }
 }
 
-impl Default for PostgreSQLAICodeQuality {
+impl Default for PostgreSQLCompositeCodeQuality {
     fn default() -> Self {
         Self {
             quality_score: 0.0,

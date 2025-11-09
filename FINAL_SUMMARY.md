@@ -1,12 +1,12 @@
-# 🎉 **MISSION ACCOMPLISHED: Best-in-Class AI/LLM Code Analysis Library!**
+# 🎉 **MISSION ACCOMPLISHED: Best-in-Class Insight-Driven Code Analysis Library!**
 
 ## ✅ **What We Built**
 
-A **comprehensive Rust library** for AI/LLM-powered code analysis with **PostgreSQL + pgvector integration** that provides:
+A **comprehensive Rust library** for insight-driven code analysis with **PostgreSQL + pgvector integration** that provides:
 
 ### **📊 Core Metrics (17 Total)**
 1. **Traditional Metrics (12)**: ABC, Cognitive, Cyclomatic, Halstead, LOC, MI, NARGS, NOM, NPA, NPM, WMC, Exit
-2. **AI/LLM Metrics (5)**: Semantic Complexity, Refactoring Readiness, AI Code Quality, Code Smell Density, Testability Score
+2. **Insight Metrics (5)**: Semantic Complexity, Refactoring Readiness, Composite Code Quality, Code Smell Density, Testability Score
 
 ### **🗄️ Database Integration**
 - **PostgreSQL + pgvector** - Vector search with 2560-dim embeddings (Qodo + Jina v3)
@@ -32,10 +32,10 @@ A **comprehensive Rust library** for AI/LLM-powered code analysis with **Postgre
 ```
 src/
 ├── metrics/
-│   ├── ai_metrics/
+│   ├── insight_metrics/
 │   │   ├── semantic_complexity.rs      # Basic semantic analysis
 │   │   ├── refactoring_readiness.rs    # Refactoring assessment
-│   │   ├── ai_code_quality.rs          # AI code quality metrics
+│   │   ├── composite_code_quality.rs   # Composite code quality metrics
 │   │   ├── code_smell_density.rs       # Code smell detection
 │   │   ├── testability_score.rs        # Testability assessment
 │   │   └── postgresql_enriched.rs      # PostgreSQL + pgvector integration
@@ -80,7 +80,7 @@ println!("Semantic complexity: {}", complexity);
 ### **2. With PostgreSQL + pgvector Integration**
 ```rust
 use singularity_code_analysis::{
-    PostgreSQLEnrichedAIMetrics, 
+    PostgreSQLEnrichedInsightMetrics,
     VectorSearchIntegration, 
     RelationalDataIntegration,
     PatternLearningIntegration
@@ -98,7 +98,7 @@ impl RelationalDataIntegration for MyApp { /* ... */ }
 impl PatternLearningIntegration for MyApp { /* ... */ }
 
 // Use the library
-let mut metrics = PostgreSQLEnrichedAIMetrics::new(Box::new(my_app));
+let mut metrics = PostgreSQLEnrichedInsightMetrics::new(Box::new(my_app));
 let result = metrics.calculate_enriched_metrics(code, LANG::Rust, "src/example.rs");
 ```
 

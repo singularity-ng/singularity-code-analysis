@@ -51,7 +51,7 @@ rustler = { version = "0.37", optional = true }
 
 [features]
 default = []
-ai-metrics = []
+insight-metrics = []
 nif = ["rustler"]
 
 [dev-dependencies]

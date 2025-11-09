@@ -106,7 +106,7 @@ fn calculate(x: i32, y: i32) -> i32 {
 
 > [!NOTE]
 > ### Tree-sitter Integration
-> This library uses Tree-sitter 0.25.10 with the `kind_id()` method for efficient node type checking.
+> This library targets Tree-sitter 0.25.10 and favors the `kind()` string APIs for robust node type checks across grammar updates.
 > Language grammars are provided by their respective tree-sitter crates (e.g., `tree-sitter-rust`,
 > `tree-sitter-elixir`) and are automatically compiled when building the library. No separate
 > grammar files need to be shipped or maintained.

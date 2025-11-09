@@ -1,4 +1,4 @@
-//! Code Smell Density Metric for AI/LLM Systems
+//! Code smell density metric for insight-driven analysis
 
 use serde::{Deserialize, Serialize};
 
