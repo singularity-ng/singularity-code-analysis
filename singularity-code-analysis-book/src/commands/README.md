@@ -1,6 +1,6 @@
 # Commands
 
-**rust-code-analysis-cli** offers a range of **commands** to analyze and extract information from source code. Each command **may** include parameters specific to the task it performs. Below, we describe the core types of commands available in **rust-code-analysis-cli**.
+**singularity-code-analysis-cli** offers a range of **commands** to analyze and extract information from source code. Each command **may** include parameters specific to the task it performs. Below, we describe the core types of commands available in **singularity-code-analysis-cli**.
 
 ## Metrics
 
@@ -11,12 +11,12 @@ Metrics provide quantitative measures about source code, which can help in:
 - Tell developers where their code is more tough to handle
 - Discovering potential issues early in the development process
 
-**rust-code-analysis** calculates the metrics starting from the
+**singularity-code-analysis** calculates the metrics starting from the
 source code of a program. These kind of metrics are called *static metrics*.
 
 ## Nodes
 
-To represent the structure of program code, **rust-code-analysis-cli** builds
+To represent the structure of program code, **singularity-code-analysis-cli** builds
 an
 <a href="https://en.wikipedia.org/wiki/Abstract_syntax_tree" target="_blank">Abstract Syntax Tree (AST)</a>.
 A **node** is an element of this tree and denotes any syntactic construct
@@ -32,4 +32,4 @@ Nodes can be used to:
 
 ## REST API
 
-**rust-code-analysis-web** runs a server offering a REST API. This allows users to send source code via HTTP and receive corresponding metrics in `JSON` format.
+**singularity-code-analysis-web** runs a server offering a REST API. This allows users to send source code via HTTP and receive corresponding metrics in `JSON` format.

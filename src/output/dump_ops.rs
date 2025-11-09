@@ -16,7 +16,7 @@ use crate::{
 /// ```
 /// use std::path::PathBuf;
 ///
-/// use rust_code_analysis::{dump_ops, operands_and_operators, CppParser, ParserTrait};
+/// use singularity_code_analysis::{dump_ops, operands_and_operators, CppParser, ParserTrait};
 ///
 /// # fn main() {
 /// let source_code = "int a = 42;";

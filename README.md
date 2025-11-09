@@ -10,7 +10,8 @@ It is based on a parser generator tool and an incremental parsing library
 called
 <a href="https://tree-sitter.github.io/tree-sitter/" target="_blank">Tree Sitter</a>.
 
-This library is a fork of [Mozilla rust-code-analysis](https://github.com/mozilla/rust-code-analysis)
+This crate is the Singularity-maintained continuation of
+[Mozilla rust-code-analysis](https://github.com/mozilla/rust-code-analysis),
 with enhanced support for BEAM languages (Elixir, Erlang, Gleam) and additional
 code complexity metrics.
 
@@ -86,17 +87,30 @@ fn calculate(x: i32, y: i32) -> i32 {
 
 ### Supported Languages
 
-| Language | Status | Metrics | Function Detection |
-|----------|--------|---------|-------------------|
-| **Rust** | ✅ Full | ✅ Complete | ✅ Full |
-| **Python** | ✅ Full | ✅ Complete | ✅ Full |
-| **JavaScript/TypeScript** | ✅ Full | ✅ Complete | ✅ Full |
-| **Java** | ✅ Full | ✅ Complete | ✅ Full |
-| **C/C++** | ✅ Full | ✅ Complete | ✅ Full |
-| **Elixir** | ✅ Full | ⚠️ Partial | ✅ Full |
-| **Erlang** | ✅ Full | ⚠️ Partial | ✅ Full |
-| **Gleam** | ✅ Full | ⚠️ Partial | ✅ Full |
-| **Lua** | ✅ Full | ⚠️ Partial | ✅ Full |
+| Language | Parsing & Function Detection | Metrics Coverage | Notes |
+|----------|------------------------------|------------------|-------|
+| **Rust** | ✅ Full | ✅ Full | |
+| **Python** | ✅ Full | ✅ Full | |
+| **JavaScript** | ✅ Full | ✅ Full | |
+| **TypeScript** | ✅ Full | ✅ Full | Covers the `LANG::Typescript` parser. |
+| **TSX (TypeScript + JSX)** | ✅ Full | ✅ Full | Covers the `LANG::Tsx` parser for mixed TS/JSX files. |
+| **Java** | ✅ Full | ✅ Full | Weighted Methods per Class (WMC) implemented only for Java. |
+| **C/C++** | ✅ Full | ✅ Full | See the macro parsing note below for known limitations. |
+| **Kotlin** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **Go** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **C#** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **Elixir** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **Erlang** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **Gleam** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **Lua** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+
+> [!IMPORTANT]
+> ### Known C/C++ limitations
+> Tree-sitter's C/C++ grammars still struggle with Mozilla-style macro expansions.
+> The three unit tests under `c_langs_macros` are expected to fail until the
+> upstream grammar exposes these constructs without parse errors. Function and
+> metrics analysis for typical C/C++ codebases works as expected; only heavily
+> macro-based signatures are affected.
 
 ## Metrics
 
@@ -251,5 +265,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-This library is a fork of [Mozilla rust-code-analysis](https://github.com/mozilla/rust-code-analysis).
+singularity-code-analysis started as a fork of
+[Mozilla rust-code-analysis](https://github.com/mozilla/rust-code-analysis).
 Special thanks to the Mozilla team for their excellent work on code analysis tools.
