@@ -933,10 +933,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 4.0,
-                  "average": 4.0,
+                  "sum": 3.0,
+                  "average": 3.0,
                   "min": 0.0,
-                  "max": 4.0
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1065,10 +1065,10 @@ mod tests {
                     metric.cognitive,
                     @r###"
                     {
-                      "sum": 4.0,
-                      "average": 4.0,
+                      "sum": 3.0,
+                      "average": 3.0,
                       "min": 0.0,
-                      "max": 4.0
+                      "max": 3.0
                     }"###
                 );
             },
@@ -2215,10 +2215,10 @@ mod tests {
                     metric.cognitive,
                     @r###"
                     {
-                      "sum": 4.0,
-                      "average": 4.0,
+                      "sum": 3.0,
+                      "average": 3.0,
                       "min": 0.0,
-                      "max": 4.0
+                      "max": 3.0
                     }"###
                 );
             },
