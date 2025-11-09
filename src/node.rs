@@ -292,7 +292,7 @@ impl<'a> Search<'a> for Node<'a> {
     }
 
     fn first_child_kind(&self, pred: fn(&Node<'a>) -> bool) -> Option<Node<'a>> {
-        self.children().find(|child| pred(child))
+        self.children().find(pred)
     }
 
     fn act_on_child(&self, action: &mut dyn FnMut(&Node<'a>)) {

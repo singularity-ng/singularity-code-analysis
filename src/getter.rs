@@ -3,9 +3,9 @@ use crate::{
     metrics::halstead::HalsteadType,
     spaces::SpaceKind,
     traits::Search,
-    CcommentCode, Cpp, CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode,
-    Java, JavaCode, Javascript, JavascriptCode, KotlinCode, LuaCode, MozjsCode, Node,
-    PreprocCode, Python, PythonCode, Rust, RustCode, Tsx, TsxCode, Typescript, TypescriptCode,
+    CcommentCode, Cpp, CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode, Java,
+    JavaCode, Javascript, JavascriptCode, KotlinCode, LuaCode, MozjsCode, Node, PreprocCode,
+    Python, PythonCode, Rust, RustCode, Tsx, TsxCode, Typescript, TypescriptCode,
 };
 
 macro_rules! get_operator {
@@ -62,18 +62,76 @@ impl Getter for PythonCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "import_statement" | "import_from_statement" | "." | "," | "as" | "*" | ">>" 
-            | "assert_statement" | ":=" | "return_statement" | "def" | "del_statement"
-            | "raise_statement" | "pass_statement" | "break_statement" | "continue_statement"
-            | "if_statement" | "elif_clause" | "else_clause" | "async" | "for_statement"
-            | "in" | "while_statement" | "try_statement" | "except_clause" | "finally_clause"
-            | "with_statement" | "->" | "=" | "global_statement" | "exec_statement" | "@"
-            | "not" | "and" | "or" | "+" | "-" | "/" | "%" | "//" | "**" | "|" | "&"
-            | "^" | "<<" | "~" | "<" | "<=" | "==" | "!=" | ">=" | ">" | "<>" | "is"
-            | "+=" | "-=" | "*=" | "/=" | "@=" | "//=" | "%=" | "**=" | ">>=" | "<<="
-            | "&=" | "^=" | "|=" | "yield" | "await" | "print_statement" => {
-                HalsteadType::Operator
-            }
+            "import_statement"
+            | "import_from_statement"
+            | "."
+            | ","
+            | "as"
+            | "*"
+            | ">>"
+            | "assert_statement"
+            | ":="
+            | "return_statement"
+            | "def"
+            | "del_statement"
+            | "raise_statement"
+            | "pass_statement"
+            | "break_statement"
+            | "continue_statement"
+            | "if_statement"
+            | "elif_clause"
+            | "else_clause"
+            | "async"
+            | "for_statement"
+            | "in"
+            | "while_statement"
+            | "try_statement"
+            | "except_clause"
+            | "finally_clause"
+            | "with_statement"
+            | "->"
+            | "="
+            | "global_statement"
+            | "exec_statement"
+            | "@"
+            | "not"
+            | "and"
+            | "or"
+            | "+"
+            | "-"
+            | "/"
+            | "%"
+            | "//"
+            | "**"
+            | "|"
+            | "&"
+            | "^"
+            | "<<"
+            | "~"
+            | "<"
+            | "<="
+            | "=="
+            | "!="
+            | ">="
+            | ">"
+            | "<>"
+            | "is"
+            | "+="
+            | "-="
+            | "*="
+            | "/="
+            | "@="
+            | "//="
+            | "%="
+            | "**="
+            | ">>="
+            | "<<="
+            | "&="
+            | "^="
+            | "|="
+            | "yield"
+            | "await"
+            | "print_statement" => HalsteadType::Operator,
             "identifier" | "integer" | "float" | "true" | "false" | "none" => HalsteadType::Operand,
             "string" => {
                 let mut operator = HalsteadType::Unknown;
@@ -116,10 +174,12 @@ impl Getter for MozjsCode {
 impl Getter for JavascriptCode {
     fn get_space_kind(node: &Node) -> SpaceKind {
         match node.kind() {
-            "function_expression" | "method_definition" | "generator_function"
-            | "function_declaration" | "generator_function_declaration" | "arrow_function" => {
-                SpaceKind::Function
-            }
+            "function_expression"
+            | "method_definition"
+            | "generator_function"
+            | "function_declaration"
+            | "generator_function_declaration"
+            | "arrow_function" => SpaceKind::Function,
             "class" | "class_declaration" => SpaceKind::Class,
             "program" => SpaceKind::Unit,
             _ => SpaceKind::Unknown,
@@ -156,18 +216,103 @@ impl Getter for JavascriptCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "export" | "import" | "extends" | "." | "from" | "(" | "," | "as" | "*" | ">>"
-            | ">>>" | ":" | "return" | "delete" | "throw" | "break" | "continue" | "if"
-            | "else" | "switch" | "case" | "default" | "async" | "for" | "in" | "of"
-            | "while" | "try" | "catch" | "finally" | "with" | "=" | "@" | "&&" | "||"
-            | "+" | "-" | "--" | "++" | "/" | "%" | "**" | "|" | "&" | "<<" | "~" | "<"
-            | "<=" | "==" | "!=" | ">=" | ">" | "+=" | "!" | "!==" | "===" | "-=" | "*="
-            | "/=" | "%=" | "**=" | ">>=" | ">>>=" | "<<=" | "&=" | "^" | "^=" | "|="
-            | "yield" | "[" | "{" | "await" | "?" | "??" | "new" | "let" | "var" | "const"
-            | "function" | "function_expression" | ";" => HalsteadType::Operator,
-            "identifier" | "member_expression" | "property_identifier" | "string" | "number"
-            | "true" | "false" | "null" | "void" | "this" | "super" | "undefined" | "set"
-            | "get" | "typeof" | "instanceof" => HalsteadType::Operand,
+            "export"
+            | "import"
+            | "extends"
+            | "."
+            | "from"
+            | "("
+            | ","
+            | "as"
+            | "*"
+            | ">>"
+            | ">>>"
+            | ":"
+            | "return"
+            | "delete"
+            | "throw"
+            | "break"
+            | "continue"
+            | "if"
+            | "else"
+            | "switch"
+            | "case"
+            | "default"
+            | "async"
+            | "for"
+            | "in"
+            | "of"
+            | "while"
+            | "try"
+            | "catch"
+            | "finally"
+            | "with"
+            | "="
+            | "@"
+            | "&&"
+            | "||"
+            | "+"
+            | "-"
+            | "--"
+            | "++"
+            | "/"
+            | "%"
+            | "**"
+            | "|"
+            | "&"
+            | "<<"
+            | "~"
+            | "<"
+            | "<="
+            | "=="
+            | "!="
+            | ">="
+            | ">"
+            | "+="
+            | "!"
+            | "!=="
+            | "==="
+            | "-="
+            | "*="
+            | "/="
+            | "%="
+            | "**="
+            | ">>="
+            | ">>>="
+            | "<<="
+            | "&="
+            | "^"
+            | "^="
+            | "|="
+            | "yield"
+            | "["
+            | "{"
+            | "await"
+            | "?"
+            | "??"
+            | "new"
+            | "let"
+            | "var"
+            | "const"
+            | "function"
+            | "function_expression"
+            | ";" => HalsteadType::Operator,
+            "identifier"
+            | "member_expression"
+            | "property_identifier"
+            | "string"
+            | "number"
+            | "true"
+            | "false"
+            | "null"
+            | "void"
+            | "this"
+            | "super"
+            | "undefined"
+            | "set"
+            | "get"
+            | "typeof"
+            | "instanceof" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
     }
@@ -178,10 +323,12 @@ impl Getter for JavascriptCode {
 impl Getter for TypescriptCode {
     fn get_space_kind(node: &Node) -> SpaceKind {
         match node.kind() {
-            "function_expression" | "method_definition" | "generator_function"
-            | "function_declaration" | "generator_function_declaration" | "arrow_function" => {
-                SpaceKind::Function
-            }
+            "function_expression"
+            | "method_definition"
+            | "generator_function"
+            | "function_declaration"
+            | "generator_function_declaration"
+            | "arrow_function" => SpaceKind::Function,
             "class" | "class_declaration" => SpaceKind::Class,
             "interface_declaration" => SpaceKind::Interface,
             "program" => SpaceKind::Unit,
@@ -219,20 +366,95 @@ impl Getter for TypescriptCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "export" | "import" | "extends" | "." | "from" | "(" | "," | "as" | "*" | ">>"
-            | ">>>" | ":" | "return" | "delete" | "throw" | "break" | "continue" | "if"
-            | "else" | "switch" | "case" | "default" | "async" | "for" | "in" | "of"
-            | "while" | "try" | "catch" | "finally" | "with" | "=" | "@" | "&&" | "||"
-            | "+" | "-" | "--" | "++" | "/" | "%" | "**" | "|" | "&" | "<<" | "~" | "<"
-            | "<=" | "==" | "!=" | ">=" | ">" | "+=" | "!" | "!==" | "===" | "-=" | "*="
-            | "/=" | "%=" | "**=" | ">>=" | ">>>=" | "<<=" | "&=" | "^" | "^=" | "|="
-            | "yield" | "[" | "{" | "await" | "?" | "??" | "new" | "let" | "var" | "const"
-            | "function" | "function_expression" | ";" | "predefined_type" | "type_identifier" => HalsteadType::Operator,
+            "export"
+            | "import"
+            | "extends"
+            | "."
+            | "from"
+            | "("
+            | ","
+            | "as"
+            | "*"
+            | ">>"
+            | ">>>"
+            | ":"
+            | "return"
+            | "delete"
+            | "throw"
+            | "break"
+            | "continue"
+            | "if"
+            | "else"
+            | "switch"
+            | "case"
+            | "default"
+            | "async"
+            | "for"
+            | "in"
+            | "of"
+            | "while"
+            | "try"
+            | "catch"
+            | "finally"
+            | "with"
+            | "="
+            | "@"
+            | "&&"
+            | "||"
+            | "+"
+            | "-"
+            | "--"
+            | "++"
+            | "/"
+            | "%"
+            | "**"
+            | "|"
+            | "&"
+            | "<<"
+            | "~"
+            | "<"
+            | "<="
+            | "=="
+            | "!="
+            | ">="
+            | ">"
+            | "+="
+            | "!"
+            | "!=="
+            | "==="
+            | "-="
+            | "*="
+            | "/="
+            | "%="
+            | "**="
+            | ">>="
+            | ">>>="
+            | "<<="
+            | "&="
+            | "^"
+            | "^="
+            | "|="
+            | "yield"
+            | "["
+            | "{"
+            | "await"
+            | "?"
+            | "??"
+            | "new"
+            | "let"
+            | "var"
+            | "const"
+            | "function"
+            | "function_expression"
+            | ";"
+            | "predefined_type"
+            | "type_identifier" => HalsteadType::Operator,
             "identifier" | "nested_identifier" | "member_expression" | "property_identifier" => {
                 // Check if this identifier is part of a type annotation
                 if let Some(parent) = node.parent() {
                     match parent.kind() {
-                        "type_annotation" | "predefined_type" | "type_identifier" | "generic_type" | "type_arguments" => {
+                        "type_annotation" | "predefined_type" | "type_identifier"
+                        | "generic_type" | "type_arguments" => {
                             return HalsteadType::Unknown;
                         }
                         _ => {}
@@ -252,10 +474,12 @@ impl Getter for TypescriptCode {
 impl Getter for TsxCode {
     fn get_space_kind(node: &Node) -> SpaceKind {
         match node.kind() {
-            "function_expression" | "method_definition" | "generator_function"
-            | "function_declaration" | "generator_function_declaration" | "arrow_function" => {
-                SpaceKind::Function
-            }
+            "function_expression"
+            | "method_definition"
+            | "generator_function"
+            | "function_declaration"
+            | "generator_function_declaration"
+            | "arrow_function" => SpaceKind::Function,
             "class" | "class_declaration" => SpaceKind::Class,
             "interface_declaration" => SpaceKind::Interface,
             "program" => SpaceKind::Unit,
@@ -293,20 +517,95 @@ impl Getter for TsxCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "export" | "import" | "extends" | "." | "from" | "(" | "," | "as" | "*" | ">>"
-            | ">>>" | ":" | "return" | "delete" | "throw" | "break" | "continue" | "if"
-            | "else" | "switch" | "case" | "default" | "async" | "for" | "in" | "of"
-            | "while" | "try" | "catch" | "finally" | "with" | "=" | "@" | "&&" | "||"
-            | "+" | "-" | "--" | "++" | "/" | "%" | "**" | "|" | "&" | "<<" | "~" | "<"
-            | "<=" | "==" | "!=" | ">=" | ">" | "+=" | "!" | "!==" | "===" | "-=" | "*="
-            | "/=" | "%=" | "**=" | ">>=" | ">>>=" | "<<=" | "&=" | "^" | "^=" | "|="
-            | "yield" | "[" | "{" | "await" | "?" | "??" | "new" | "let" | "var" | "const"
-            | "function" | "function_expression" | ";" | "predefined_type" | "type_identifier" => HalsteadType::Operator,
+            "export"
+            | "import"
+            | "extends"
+            | "."
+            | "from"
+            | "("
+            | ","
+            | "as"
+            | "*"
+            | ">>"
+            | ">>>"
+            | ":"
+            | "return"
+            | "delete"
+            | "throw"
+            | "break"
+            | "continue"
+            | "if"
+            | "else"
+            | "switch"
+            | "case"
+            | "default"
+            | "async"
+            | "for"
+            | "in"
+            | "of"
+            | "while"
+            | "try"
+            | "catch"
+            | "finally"
+            | "with"
+            | "="
+            | "@"
+            | "&&"
+            | "||"
+            | "+"
+            | "-"
+            | "--"
+            | "++"
+            | "/"
+            | "%"
+            | "**"
+            | "|"
+            | "&"
+            | "<<"
+            | "~"
+            | "<"
+            | "<="
+            | "=="
+            | "!="
+            | ">="
+            | ">"
+            | "+="
+            | "!"
+            | "!=="
+            | "==="
+            | "-="
+            | "*="
+            | "/="
+            | "%="
+            | "**="
+            | ">>="
+            | ">>>="
+            | "<<="
+            | "&="
+            | "^"
+            | "^="
+            | "|="
+            | "yield"
+            | "["
+            | "{"
+            | "await"
+            | "?"
+            | "??"
+            | "new"
+            | "let"
+            | "var"
+            | "const"
+            | "function"
+            | "function_expression"
+            | ";"
+            | "predefined_type"
+            | "type_identifier" => HalsteadType::Operator,
             "identifier" | "nested_identifier" | "member_expression" | "property_identifier" => {
                 // Check if this identifier is part of a type annotation
                 if let Some(parent) = node.parent() {
                     match parent.kind() {
-                        "type_annotation" | "predefined_type" | "type_identifier" | "generic_type" | "type_arguments" => {
+                        "type_annotation" | "predefined_type" | "type_identifier"
+                        | "generic_type" | "type_arguments" => {
                             return HalsteadType::Unknown;
                         }
                         _ => {}
@@ -364,11 +663,12 @@ impl Getter for RustCode {
                 _ => HalsteadType::Unknown,
             },
             "(" | "{" | "[" | "=>" | "+" | "*" | "async" | "await" | "continue" | "for" | "if"
-            | "let" | "loop" | "match" | "return" | "unsafe" | "while" | "=" | "," | "->"
-            | "?" | "<" | ">" | "&" | "mutable_specifier" | ".." | "..=" | "-" | "&&" | "|"
-            | "^" | "==" | "!=" | "<=" | ">=" | "<<" | ">>" | "%" | "+=" | "-=" | "*=" | "/="
-            | "%=" | "&=" | "|=" | "^=" | "<<=" | ">>=" | "move" | "." | "primitive_type"
-            | "fn" | ";" => HalsteadType::Operator,
+            | "let" | "loop" | "match" | "return" | "unsafe" | "while" | "=" | "," | "->" | "?"
+            | "<" | ">" | "&" | "mutable_specifier" | ".." | "..=" | "-" | "&&" | "|" | "^"
+            | "==" | "!=" | "<=" | ">=" | "<<" | ">>" | "%" | "+=" | "-=" | "*=" | "/=" | "%="
+            | "&=" | "|=" | "^=" | "<<=" | ">>=" | "move" | "." | "primitive_type" | "fn" | ";" => {
+                HalsteadType::Operator
+            }
             "identifier" | "string_literal" | "raw_string_literal" | "integer_literal"
             | "float_literal" | "boolean_literal" | "self" | "char_literal" | "_" => {
                 HalsteadType::Operand
@@ -384,16 +684,18 @@ impl Getter for CppCode {
     fn get_func_space_name<'a>(node: &Node, code: &'a [u8]) -> Option<&'a str> {
         match node.kind() {
             "function_definition" => {
-                if let Some(op_cast) = node.first_child_kind(|child| child.kind() == "operator_cast") {
+                if let Some(op_cast) =
+                    node.first_child_kind(|child| child.kind() == "operator_cast")
+                {
                     let code = &code[op_cast.start_byte()..op_cast.end_byte()];
                     return std::str::from_utf8(code).ok();
                 }
                 // we're in a function_definition so need to get the declarator
                 if let Some(declarator) = node.child_by_field_name("declarator") {
                     let declarator_node = declarator;
-                    if let Some(fd) = declarator_node.first_occurrence_kind(|child| {
-                        child.kind() == "function_declarator"
-                    }) {
+                    if let Some(fd) = declarator_node
+                        .first_occurrence_kind(|child| child.kind() == "function_declarator")
+                    {
                         if let Some(first) = fd.child(0) {
                             match first.kind() {
                                 "type_identifier"
@@ -510,7 +812,9 @@ impl Getter for JavaCode {
     fn get_space_kind(node: &Node) -> SpaceKind {
         match node.kind() {
             "class_declaration" => SpaceKind::Class,
-            "method_declaration" | "constructor_declaration" | "lambda_expression" => SpaceKind::Function,
+            "method_declaration" | "constructor_declaration" | "lambda_expression" => {
+                SpaceKind::Function
+            }
             "interface_declaration" => SpaceKind::Interface,
             "program" => SpaceKind::Unit,
             _ => SpaceKind::Unknown,
@@ -671,15 +975,21 @@ impl Getter for ElixirCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "binary_operator" | "unary_operator" | "operator_identifier" | "dot"
-            | "call" | "arguments" => HalsteadType::Operator,
+            "binary_operator"
+            | "unary_operator"
+            | "operator_identifier"
+            | "dot"
+            | "call"
+            | "arguments" => HalsteadType::Operator,
             "identifier" | "alias" | "atom" | "quoted_atom" | "integer" | "string" | "charlist"
-            | "sigil" | "list" | "tuple" | "map" | "struct" | "keywords"
-            | "anonymous_function" => HalsteadType::Operand,
-            "+" | "-" | "*" | "/" | "%" | "++" | "--" | "::" | "->" | "<-" | "<>" | "||"
-            | "&&" | "===" | "==" | "!==" | "!=" | "<" | "<=" | ">" | ">=" | "in" | "when"
-            | "and" | "or" | "not" | "xor" | "<<<" | ">>>" | "^^^" | "~~~" | "&&&" | "|||"
-            | "." => HalsteadType::Operator,
+            | "sigil" | "list" | "tuple" | "map" | "struct" | "keywords" | "anonymous_function" => {
+                HalsteadType::Operand
+            }
+            "+" | "-" | "*" | "/" | "%" | "++" | "--" | "::" | "->" | "<-" | "<>" | "||" | "&&"
+            | "===" | "==" | "!==" | "!=" | "<" | "<=" | ">" | ">=" | "in" | "when" | "and"
+            | "or" | "not" | "xor" | "<<<" | ">>>" | "^^^" | "~~~" | "&&&" | "|||" | "." => {
+                HalsteadType::Operator
+            }
             "if" | "unless" | "case" | "fn" | "do" | "after" | "rescue" | "catch" | "else" => {
                 HalsteadType::Operator
             }
@@ -784,11 +1094,12 @@ impl Getter for ErlangCode {
 
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
-            "binary_op_expr" | "unary_op_expr" | "match_expr" | "catch_expr"
-            | "+" | "-" | "*" | "/" | "%" | "div" | "rem" | "band" | "bor" | "bxor" | "bsl"
-            | "bsr" | "and" | "or" | "not" | "xor" | "orelse" | "andalso" | "==" | "/="
-            | "=:= " | "=/=" | "<" | "<=" | ">" | ">=" | "++" | "--" | "!" | "catch" | "of"
-            | "after" => HalsteadType::Operator,
+            "binary_op_expr" | "unary_op_expr" | "match_expr" | "catch_expr" | "+" | "-" | "*"
+            | "/" | "%" | "div" | "rem" | "band" | "bor" | "bxor" | "bsl" | "bsr" | "and"
+            | "or" | "not" | "xor" | "orelse" | "andalso" | "==" | "/=" | "=:= " | "=/=" | "<"
+            | "<=" | ">" | ">=" | "++" | "--" | "!" | "catch" | "of" | "after" => {
+                HalsteadType::Operator
+            }
             "atom" | "var" | "list" | "tuple" | "map_expr" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
@@ -828,9 +1139,10 @@ impl Getter for GleamCode {
     fn get_op_type(node: &Node) -> HalsteadType {
         match node.kind() {
             "binary_expression" | "boolean_negation" | "integer_negation" | "pipeline_echo"
-            | "case" | "let"
-            | "+" | "-" | "*" | "/" | "%" | "++" | "--" | "<" | "<=" | ">" | ">=" | "==" | "!="
-            | "&&" | "||" | "<-" | "->" | "if" | "else" => HalsteadType::Operator,
+            | "case" | "let" | "+" | "-" | "*" | "/" | "%" | "++" | "--" | "<" | "<=" | ">"
+            | ">=" | "==" | "!=" | "&&" | "||" | "<-" | "->" | "if" | "else" => {
+                HalsteadType::Operator
+            }
             "identifier" | "integer" | "float" | "string" | "comment" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
@@ -942,7 +1254,9 @@ impl Getter for CsharpCode {
             "compilation_unit" => SpaceKind::Unit,
             "class_declaration" | "struct_declaration" | "record_declaration" => SpaceKind::Class,
             "interface_declaration" => SpaceKind::Interface,
-            "method_declaration" | "constructor_declaration" | "lambda_expression"
+            "method_declaration"
+            | "constructor_declaration"
+            | "lambda_expression"
             | "anonymous_method_expression" => SpaceKind::Function,
             _ => SpaceKind::Unknown,
         }

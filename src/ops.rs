@@ -377,16 +377,7 @@ mod tests {
             }",
             "foo.c",
             &mut ["()", "{}", "int", "&", "=", "+", "/", ",", ";"],
-            &mut [
-                "main",
-                "a",
-                "b",
-                "c",
-                "avg",
-                "scanf",
-                "3",
-                "printf",
-            ],
+            &mut ["main", "a", "b", "c", "avg", "scanf", "3", "printf"],
         );
     }
 

@@ -759,7 +759,10 @@ impl Cognitive for GoCode {
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind() {
-            "if_statement" | "for_statement" | "switch_statement" | "select_statement"
+            "if_statement"
+            | "for_statement"
+            | "switch_statement"
+            | "select_statement"
             | "type_switch_statement" => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }

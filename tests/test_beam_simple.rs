@@ -17,8 +17,9 @@ end
 
     let path = Path::new("test.ex");
     println!("Testing Elixir function detection:");
-    let func_space = get_function_spaces(&LANG::Elixir, elixir_code.as_bytes().to_vec(), path, None)
-        .expect("No function spaces found");
+    let func_space =
+        get_function_spaces(&LANG::Elixir, elixir_code.as_bytes().to_vec(), path, None)
+            .expect("No function spaces found");
 
     println!("Success! Found {} spaces", func_space.spaces.len());
     for space in &func_space.spaces {
