@@ -16,12 +16,10 @@ code complexity metrics.
 
 ## Features
 
-- **Multi-language support**: Rust, Python, JavaScript/TypeScript, Java, C/C++, Elixir, Erlang, Gleam, and more
-- **Comprehensive metrics**: Cyclomatic complexity, Halstead metrics, Maintainability Index, Lines of Code
+- **Multi-language support**: 14 languages including Rust, Python, JavaScript/TypeScript, Java, Kotlin, C/C++, C#, Go, Elixir, Erlang, Gleam, and Lua
+- **Comprehensive metrics**: Cyclomatic complexity, Cognitive complexity, Halstead metrics, Maintainability Index, Lines of Code
 - **BEAM language support**: Enhanced parsing and analysis for Elixir, Erlang, and Gleam
 - **Tree-sitter integration**: Fast, incremental parsing with Tree-sitter 0.25.10
-- **Command-line interface**: Easy-to-use CLI for analyzing codebases
-- **Web API**: REST API for web-based code analysis
 - **Production-ready**: Comprehensive error handling, extensive test coverage, and CI/CD
 
 ## Installation
@@ -90,13 +88,18 @@ fn calculate(x: i32, y: i32) -> i32 {
 |----------|--------|---------|-------------------|
 | **Rust** | ✅ Full | ✅ Complete | ✅ Full |
 | **Python** | ✅ Full | ✅ Complete | ✅ Full |
-| **JavaScript/TypeScript** | ✅ Full | ✅ Complete | ✅ Full |
+| **JavaScript** | ✅ Full | ✅ Complete | ✅ Full |
+| **TypeScript** | ✅ Full | ✅ Complete | ✅ Full |
+| **TSX** | ✅ Full | ✅ Complete | ✅ Full |
 | **Java** | ✅ Full | ✅ Complete | ✅ Full |
+| **Kotlin** | ✅ Full | ✅ Complete | ✅ Full |
 | **C/C++** | ✅ Full | ✅ Complete | ✅ Full |
-| **Elixir** | ✅ Full | ⚠️ Partial | ✅ Full |
-| **Erlang** | ✅ Full | ⚠️ Partial | ✅ Full |
-| **Gleam** | ✅ Full | ⚠️ Partial | ✅ Full |
-| **Lua** | ✅ Full | ⚠️ Partial | ✅ Full |
+| **C#** | ✅ Full | ✅ Complete | ✅ Full |
+| **Go** | ✅ Full | ✅ Complete | ✅ Full |
+| **Elixir** | ✅ Full | ✅ Complete | ✅ Full |
+| **Erlang** | ✅ Full | ✅ Complete | ✅ Full |
+| **Gleam** | ✅ Full | ✅ Complete | ✅ Full |
+| **Lua** | ✅ Full | ✅ Complete | ✅ Full |
 
 ## Metrics
 
@@ -162,6 +165,9 @@ pub struct CodeMetrics {
     pub halstead: halstead::Stats,
     pub loc: loc::Stats,
     pub nom: nom::Stats,
+    pub mi: mi::Stats,
+    pub abc: abc::Stats,
+    pub wmc: wmc::Stats,
     // ... additional metrics
 }
 ```
