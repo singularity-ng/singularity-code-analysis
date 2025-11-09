@@ -298,7 +298,10 @@ impl Checker for JavaCode {
     }
 
     fn is_func(node: &Node) -> bool {
-        matches!(node.kind(), "method_declaration" | "constructor_declaration")
+        matches!(
+            node.kind(),
+            "method_declaration" | "constructor_declaration"
+        )
     }
 
     fn is_closure(node: &Node) -> bool {
@@ -424,8 +427,7 @@ impl Checker for JavascriptCode {
             return false;
         }
         if let Some(parent) = node.parent() {
-            return node.kind() == "if_statement"
-                && parent.kind() == "if_statement";
+            return node.kind() == "if_statement" && parent.kind() == "if_statement";
         }
         false
     }
@@ -565,11 +567,7 @@ impl Checker for RustCode {
     fn is_func_space(node: &Node) -> bool {
         matches!(
             node.kind(),
-            "source_file"
-                | "function_item"
-                | "impl_item"
-                | "trait_item"
-                | "closure_expression"
+            "source_file" | "function_item" | "impl_item" | "trait_item" | "closure_expression"
         )
     }
 
@@ -586,10 +584,7 @@ impl Checker for RustCode {
     }
 
     fn is_non_arg(node: &Node) -> bool {
-        matches!(
-            node.kind(),
-            "(" | "," | ")" | "|" | "attribute_item"
-        )
+        matches!(node.kind(), "(" | "," | ")" | "|" | "attribute_item")
     }
 
     fn is_string(node: &Node) -> bool {
@@ -627,10 +622,10 @@ impl Checker for KotlinCode {
         matches!(
             node.kind(),
             "source_file"
-            | "class_declaration"
-            | "function_declaration"
-            | "lambda_literal"
-            | "anonymous_function"
+                | "class_declaration"
+                | "function_declaration"
+                | "lambda_literal"
+                | "anonymous_function"
         )
     }
 
@@ -651,10 +646,7 @@ impl Checker for KotlinCode {
     }
 
     fn is_string(node: &Node) -> bool {
-        matches!(
-            node.kind(),
-            "string_literal" | "multiline_string_literal"
-        )
+        matches!(node.kind(), "string_literal" | "multiline_string_literal")
     }
 
     fn is_else_if(_: &Node) -> bool {
@@ -681,10 +673,7 @@ impl Checker for ElixirCode {
 
     fn is_func_space(node: &Node) -> bool {
         // Elixir function spaces: source file, do blocks (which contain functions)
-        matches!(
-            node.kind(),
-            "source" | "do_block" | "anonymous_function"
-        )
+        matches!(node.kind(), "source" | "do_block" | "anonymous_function")
     }
 
     fn is_func(node: &Node) -> bool {
@@ -715,10 +704,7 @@ impl Checker for ElixirCode {
     }
 
     fn is_string(node: &Node) -> bool {
-        matches!(
-            node.kind(),
-            "string" | "charlist" | "quoted_content"
-        )
+        matches!(node.kind(), "string" | "charlist" | "quoted_content")
     }
 
     fn is_else_if(_node: &Node) -> bool {
@@ -750,20 +736,13 @@ impl Checker for ErlangCode {
         // Erlang function spaces: source file, function declarations, anonymous functions
         matches!(
             node.kind(),
-            "source_file"
-                | "fun_decl"
-                | "function_clause"
-                | "anonymous_fun"
-                | "clause_body"
+            "source_file" | "fun_decl" | "function_clause" | "anonymous_fun" | "clause_body"
         )
     }
 
     fn is_func(node: &Node) -> bool {
         // Erlang function declarations
-        matches!(
-            node.kind(),
-            "fun_decl" | "function_clause"
-        )
+        matches!(node.kind(), "fun_decl" | "function_clause")
     }
 
     fn is_closure(node: &Node) -> bool {
@@ -816,11 +795,7 @@ impl Checker for GleamCode {
         // Gleam function spaces: source file, functions, anonymous functions, blocks
         matches!(
             node.kind(),
-            "source_file"
-                | "function"
-                | "anonymous_function"
-                | "function_body"
-                | "block"
+            "source_file" | "function" | "anonymous_function" | "function_body" | "block"
         )
     }
 
@@ -879,10 +854,7 @@ impl Checker for LuaCode {
 
     fn is_func(node: &Node) -> bool {
         // Lua function declarations and definitions
-        matches!(
-            node.kind(),
-            "function_declaration" | "function_definition"
-        )
+        matches!(node.kind(), "function_declaration" | "function_definition")
     }
 
     fn is_closure(node: &Node) -> bool {
@@ -980,10 +952,10 @@ impl Checker for CsharpCode {
         matches!(
             node.kind(),
             "compilation_unit"
-            | "class_declaration"
-            | "struct_declaration"
-            | "interface_declaration"
-            | "record_declaration"
+                | "class_declaration"
+                | "struct_declaration"
+                | "interface_declaration"
+                | "record_declaration"
         )
     }
 

@@ -485,11 +485,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    // Arrow functions are not fully supported in JavaScript nom metric.
-    // tree-sitter-javascript parser does not generate ArrowFunction nodes consistently,
-    // making it impossible to reliably detect and count arrow functions.
-    // This is a known limitation of the tree-sitter-javascript grammar.
+    #[ignore = "tree-sitter-javascript arrow function limitation"]
     fn javascript_labeled_arrow_nom() {
         check_metrics::<JavascriptParser>(
             "const dimConverters = {
@@ -583,11 +579,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    // Arrow functions are not fully supported in JavaScript nom metric.
-    // tree-sitter-javascript parser does not generate ArrowFunction nodes consistently,
-    // making it impossible to reliably detect and count arrow functions.
-    // This is a known limitation of the tree-sitter-javascript grammar.
+    #[ignore = "tree-sitter-javascript arrow function limitation"]
     fn javascript_arrow_nom() {
         check_metrics::<JavascriptParser>(
             "var materials = [\"Hydrogen\"];
@@ -619,11 +611,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    // Arrow functions are not fully supported in JavaScript nom metric.
-    // tree-sitter-javascript parser does not generate ArrowFunction nodes consistently,
-    // making it impossible to reliably detect and count arrow functions.
-    // This is a known limitation of the tree-sitter-javascript grammar.
+    #[ignore = "tree-sitter-javascript arrow function limitation"]
     fn javascript_arrow_assignment_nom() {
         check_metrics::<JavascriptParser>("sink.onPull = () => { };", "foo.js", |metric| {
             // Number of spaces = 2
@@ -647,11 +635,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    // Arrow functions are not fully supported in JavaScript nom metric.
-    // tree-sitter-javascript parser does not generate ArrowFunction nodes consistently,
-    // making it impossible to reliably detect and count arrow functions.
-    // This is a known limitation of the tree-sitter-javascript grammar.
+    #[ignore = "tree-sitter-javascript arrow function limitation"]
     fn javascript_arrow_new_nom() {
         check_metrics::<JavascriptParser>(
             "const response = new Promise(resolve => channel.port1.onmessage = resolve);",
@@ -679,11 +663,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
-    // Arrow functions are not fully supported in JavaScript nom metric.
-    // tree-sitter-javascript parser does not generate ArrowFunction nodes consistently,
-    // making it impossible to reliably detect and count arrow functions.
-    // This is a known limitation of the tree-sitter-javascript grammar.
+    #[ignore = "tree-sitter-javascript arrow function limitation"]
     fn javascript_arrow_call_nom() {
         check_metrics::<JavascriptParser>(
             "let notDisabled = TestUtils.waitForCondition(

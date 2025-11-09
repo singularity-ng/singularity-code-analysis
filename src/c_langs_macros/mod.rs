@@ -41,9 +41,7 @@ mod tests {
     }
 
     #[test]
-    // FIXME: Ignoring this test temporarily due to a parse error (see issue: https://github.com/singularity/rust-code-analysis/issues/1142),
-    // in order to allow CI to pass until the issue is resolved.
-    #[ignore]
+    #[ignore = "tree-sitter-cpp parser limitation with Mozilla macros - GitHub issue #1142"]
     fn test_fn_id_strings() {
         let samples = vec!["nsPrintfCString(\"%\" PRIi32, lifetime.mTag);"];
         parse(&samples, false);

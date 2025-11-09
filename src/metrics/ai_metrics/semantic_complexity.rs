@@ -88,12 +88,18 @@ impl SemanticComplexityStats {
     #[allow(dead_code)]
     fn is_function_line_with_patterns(&self, line: &str, function_patterns: &[String]) -> bool {
         let trimmed = line.trim();
-        function_patterns.iter().any(|pattern| trimmed.starts_with(pattern))
+        function_patterns
+            .iter()
+            .any(|pattern| trimmed.starts_with(pattern))
     }
 
     /// Extract functions using custom patterns
     #[allow(dead_code)]
-    fn extract_functions_with_patterns(&self, code: &str, function_patterns: &[String]) -> Vec<FunctionInfo> {
+    fn extract_functions_with_patterns(
+        &self,
+        code: &str,
+        function_patterns: &[String],
+    ) -> Vec<FunctionInfo> {
         let mut functions = Vec::new();
         let lines: Vec<&str> = code.lines().collect();
 

@@ -751,4 +751,840 @@ mod tests {
             },
         );
     }
+
+    #[test]
+    fn kotlin_halstead_simple() {
+        check_metrics::<KotlinParser>("val x = 1 + 2", "foo.kt", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
+            {
+              "n1": 3.0,
+              "N1": 3.0,
+              "n2": 1.0,
+              "N2": 1.0,
+              "length": 4.0,
+              "estimated_program_length": 4.754887502163468,
+              "purity_ratio": 1.188721875540867,
+              "vocabulary": 4.0,
+              "volume": 8.0,
+              "difficulty": 1.5,
+              "level": 0.6666666666666666,
+              "effort": 12.0,
+              "time": 0.6666666666666666,
+              "bugs": 0.0017471609294725976
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn kotlin_halstead_moderate() {
+        check_metrics::<KotlinParser>(
+            "fun add(a: Int, b: Int): Int { return a + b }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 6.0,
+                  "N1": 6.0,
+                  "n2": 4.0,
+                  "N2": 8.0,
+                  "length": 14.0,
+                  "estimated_program_length": 23.509775004326936,
+                  "purity_ratio": 1.6792696431662097,
+                  "vocabulary": 10.0,
+                  "volume": 46.50699332842307,
+                  "difficulty": 6.0,
+                  "level": 0.16666666666666666,
+                  "effort": 279.0419599705384,
+                  "time": 15.502331109474357,
+                  "bugs": 0.014233938588537278
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_halstead_complex() {
+        check_metrics::<KotlinParser>(
+            "fun calculate(a: Int, b: Int, c: Int): Int {
+                 val x = a * b + c
+                 val y = x / 2 - a
+                 return if (y > 0) y else -y
+             }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 14.0,
+                  "N1": 19.0,
+                  "n2": 7.0,
+                  "N2": 18.0,
+                  "length": 37.0,
+                  "estimated_program_length": 72.95445336320968,
+                  "purity_ratio": 1.971741982789451,
+                  "vocabulary": 21.0,
+                  "volume": 162.51574464281416,
+                  "difficulty": 18.0,
+                  "level": 0.05555555555555555,
+                  "effort": 2925.2834035706546,
+                  "time": 162.51574464281416,
+                  "bugs": 0.06818005963549205
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_halstead_boolean_heavy() {
+        check_metrics::<KotlinParser>(
+            "fun validate(x: Int, y: Int): Boolean { return x > 0 && y > 0 || x < 0 && y < 0 }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 9.0,
+                  "N1": 12.0,
+                  "n2": 5.0,
+                  "N2": 10.0,
+                  "length": 22.0,
+                  "estimated_program_length": 40.13896548741762,
+                  "purity_ratio": 1.8244984312462555,
+                  "vocabulary": 14.0,
+                  "volume": 83.76180828526729,
+                  "difficulty": 9.0,
+                  "level": 0.1111111111111111,
+                  "effort": 753.8562745674056,
+                  "time": 41.880904142633646,
+                  "bugs": 0.027610299305771368
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_halstead_mixed_operators() {
+        check_metrics::<KotlinParser>(
+            "fun process(a: Int): String { return \"Result: ${a * 2 + (a / 3)}\" }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 7.0,
+                  "N1": 8.0,
+                  "n2": 5.0,
+                  "N2": 7.0,
+                  "length": 15.0,
+                  "estimated_program_length": 31.26112492884004,
+                  "purity_ratio": 2.0840749952560027,
+                  "vocabulary": 12.0,
+                  "volume": 53.77443751081734,
+                  "difficulty": 4.9,
+                  "level": 0.2040816326530612,
+                  "effort": 263.494743803005,
+                  "time": 14.638596877944723,
+                  "bugs": 0.013700193974307346
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_halstead_simple() {
+        check_metrics::<LuaParser>("local x = 1 + 2", "foo.lua", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
+            {
+              "n1": 0.0,
+              "N1": 0.0,
+              "n2": 0.0,
+              "N2": 0.0,
+              "length": 0.0,
+              "estimated_program_length": null,
+              "purity_ratio": null,
+              "vocabulary": 0.0,
+              "volume": null,
+              "difficulty": null,
+              "level": null,
+              "effort": null,
+              "time": null,
+              "bugs": null
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn lua_halstead_moderate() {
+        check_metrics::<LuaParser>(
+            "function add(a, b) return a + b end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 6.0,
+                  "N1": 6.0,
+                  "n2": 3.0,
+                  "N2": 5.0,
+                  "length": 11.0,
+                  "estimated_program_length": 20.264662506490403,
+                  "purity_ratio": 1.842242046044582,
+                  "vocabulary": 9.0,
+                  "volume": 34.86917501586544,
+                  "difficulty": 5.0,
+                  "level": 0.2,
+                  "effort": 174.3458750793272,
+                  "time": 9.68588194885151,
+                  "bugs": 0.010402870600353142
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_halstead_complex() {
+        check_metrics::<LuaParser>(
+            "function calculate(a, b, c)
+                 local x = a * b + c
+                 local y = x / 2 - a
+                 if y > 0 then return y else return -y end
+             end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 15.0,
+                  "N1": 21.0,
+                  "n2": 8.0,
+                  "N2": 16.0,
+                  "length": 37.0,
+                  "estimated_program_length": 82.60335893412778,
+                  "purity_ratio": 2.232523214435886,
+                  "vocabulary": 23.0,
+                  "volume": 167.37179237410948,
+                  "difficulty": 15.0,
+                  "level": 0.06666666666666667,
+                  "effort": 2510.576885611642,
+                  "time": 139.4764936450912,
+                  "bugs": 0.06157358344691786
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_halstead_boolean_heavy() {
+        check_metrics::<LuaParser>(
+            "function validate(x, y) return x > 0 and y > 0 or x < 0 and y < 0 end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 9.0,
+                  "N1": 12.0,
+                  "n2": 4.0,
+                  "N2": 11.0,
+                  "length": 23.0,
+                  "estimated_program_length": 36.529325012980806,
+                  "purity_ratio": 1.5882315223035133,
+                  "vocabulary": 13.0,
+                  "volume": 85.11011351724513,
+                  "difficulty": 12.375,
+                  "level": 0.08080808080808081,
+                  "effort": 1053.2376547759084,
+                  "time": 58.51320304310602,
+                  "bugs": 0.0345061360406794
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_halstead_mixed_operators() {
+        check_metrics::<LuaParser>(
+            "function process(a) return \"Result: \" .. (a * 2 + a / 3) end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 8.0,
+                  "N1": 9.0,
+                  "n2": 5.0,
+                  "N2": 7.0,
+                  "length": 16.0,
+                  "estimated_program_length": 35.60964047443681,
+                  "purity_ratio": 2.2256025296523005,
+                  "vocabulary": 13.0,
+                  "volume": 59.207035490257475,
+                  "difficulty": 5.6,
+                  "level": 0.17857142857142858,
+                  "effort": 331.55939874544185,
+                  "time": 18.41996659696899,
+                  "bugs": 0.015968090091229327
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_halstead_simple() {
+        check_metrics::<GoParser>("var x = 1 + 2", "foo.go", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
+            {
+              "n1": 3.0,
+              "N1": 3.0,
+              "n2": 3.0,
+              "N2": 3.0,
+              "length": 6.0,
+              "estimated_program_length": 9.509775004326936,
+              "purity_ratio": 1.584962500721156,
+              "vocabulary": 6.0,
+              "volume": 15.509775004326936,
+              "difficulty": 1.5,
+              "level": 0.6666666666666666,
+              "effort": 23.264662506490403,
+              "time": 1.292481250360578,
+              "bugs": 0.0027165012951989257
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn go_halstead_moderate() {
+        check_metrics::<GoParser>(
+            "func add(a int, b int) int { return a + b }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 6.0,
+                  "N1": 6.0,
+                  "n2": 3.0,
+                  "N2": 5.0,
+                  "length": 11.0,
+                  "estimated_program_length": 20.264662506490403,
+                  "purity_ratio": 1.842242046044582,
+                  "vocabulary": 9.0,
+                  "volume": 34.86917501586544,
+                  "difficulty": 5.0,
+                  "level": 0.2,
+                  "effort": 174.3458750793272,
+                  "time": 9.68588194885151,
+                  "bugs": 0.010402870600353142
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_halstead_complex() {
+        check_metrics::<GoParser>(
+            "func calculate(a int, b int, c int) int {
+                 x := a * b + c
+                 y := x / 2 - a
+                 if y > 0 {
+                     return y
+                 }
+                 return -y
+             }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 12.0,
+                  "N1": 17.0,
+                  "n2": 8.0,
+                  "N2": 16.0,
+                  "length": 33.0,
+                  "estimated_program_length": 67.01955000865388,
+                  "purity_ratio": 2.0308954548076934,
+                  "vocabulary": 20.0,
+                  "volume": 142.62362713128297,
+                  "difficulty": 12.0,
+                  "level": 0.08333333333333333,
+                  "effort": 1711.4835255753956,
+                  "time": 95.08241808752197,
+                  "bugs": 0.04769365003766825
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_halstead_boolean_heavy() {
+        check_metrics::<GoParser>(
+            "func validate(x int, y int) bool { return x > 0 && y > 0 || x < 0 && y < 0 }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 9.0,
+                  "N1": 12.0,
+                  "n2": 4.0,
+                  "N2": 11.0,
+                  "length": 23.0,
+                  "estimated_program_length": 36.529325012980806,
+                  "purity_ratio": 1.5882315223035133,
+                  "vocabulary": 13.0,
+                  "volume": 85.11011351724513,
+                  "difficulty": 12.375,
+                  "level": 0.08080808080808081,
+                  "effort": 1053.2376547759084,
+                  "time": 58.51320304310602,
+                  "bugs": 0.0345061360406794
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_halstead_mixed_operators() {
+        check_metrics::<GoParser>(
+            "func process(a int) string { return fmt.Sprintf(\"Result: %d\", a * 2 + a / 3) }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 9.0,
+                  "N1": 10.0,
+                  "n2": 6.0,
+                  "N2": 8.0,
+                  "length": 18.0,
+                  "estimated_program_length": 44.039100017307746,
+                  "purity_ratio": 2.446616667628208,
+                  "vocabulary": 15.0,
+                  "volume": 70.32403072095333,
+                  "difficulty": 6.0,
+                  "level": 0.16666666666666666,
+                  "effort": 421.94418432572,
+                  "time": 23.44134357365111,
+                  "bugs": 0.018752049849923146
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_halstead_simple() {
+        check_metrics::<CsharpParser>("var x = 1 + 2;", "foo.cs", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
+            {
+              "n1": 4.0,
+              "N1": 4.0,
+              "n2": 3.0,
+              "N2": 3.0,
+              "length": 7.0,
+              "estimated_program_length": 12.754887502163468,
+              "purity_ratio": 1.8221267860233525,
+              "vocabulary": 7.0,
+              "volume": 19.651484454403228,
+              "difficulty": 2.0,
+              "level": 0.5,
+              "effort": 39.302968908806456,
+              "time": 2.1834982727114696,
+              "bugs": 0.0038532659414573967
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn csharp_halstead_moderate() {
+        check_metrics::<CsharpParser>(
+            "int Add(int a, int b) { return a + b; }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 6.0,
+                  "N1": 6.0,
+                  "n2": 3.0,
+                  "N2": 5.0,
+                  "length": 11.0,
+                  "estimated_program_length": 20.264662506490403,
+                  "purity_ratio": 1.842242046044582,
+                  "vocabulary": 9.0,
+                  "volume": 34.86917501586544,
+                  "difficulty": 5.0,
+                  "level": 0.2,
+                  "effort": 174.3458750793272,
+                  "time": 9.68588194885151,
+                  "bugs": 0.010402870600353142
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_halstead_complex() {
+        check_metrics::<CsharpParser>(
+            "int Calculate(int a, int b, int c) {
+                 var x = a * b + c;
+                 var y = x / 2 - a;
+                 return y > 0 ? y : -y;
+             }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 14.0,
+                  "N1": 20.0,
+                  "n2": 8.0,
+                  "N2": 16.0,
+                  "length": 36.0,
+                  "estimated_program_length": 77.30296890880646,
+                  "purity_ratio": 2.1473046919112906,
+                  "vocabulary": 22.0,
+                  "volume": 160.5395382709427,
+                  "difficulty": 14.0,
+                  "level": 0.07142857142857142,
+                  "effort": 2247.5535357931976,
+                  "time": 124.86408532184431,
+                  "bugs": 0.057194215680663914
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_halstead_boolean_heavy() {
+        check_metrics::<CsharpParser>(
+            "bool Validate(int x, int y) { return x > 0 && y > 0 || x < 0 && y < 0; }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 9.0,
+                  "N1": 12.0,
+                  "n2": 4.0,
+                  "N2": 11.0,
+                  "length": 23.0,
+                  "estimated_program_length": 36.529325012980806,
+                  "purity_ratio": 1.5882315223035133,
+                  "vocabulary": 13.0,
+                  "volume": 85.11011351724513,
+                  "difficulty": 12.375,
+                  "level": 0.08080808080808081,
+                  "effort": 1053.2376547759084,
+                  "time": 58.51320304310602,
+                  "bugs": 0.0345061360406794
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_halstead_mixed_operators() {
+        check_metrics::<CsharpParser>(
+            "string Process(int a) { return $\"Result: {a * 2 + a / 3}\"; }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 7.0,
+                  "N1": 7.0,
+                  "n2": 5.0,
+                  "N2": 7.0,
+                  "length": 14.0,
+                  "estimated_program_length": 31.26112492884004,
+                  "purity_ratio": 2.2329374949171457,
+                  "vocabulary": 12.0,
+                  "volume": 50.18947501009619,
+                  "difficulty": 4.9,
+                  "level": 0.2040816326530612,
+                  "effort": 245.92842754947134,
+                  "time": 13.662690419415075,
+                  "bugs": 0.01308432231664305
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn elixir_halstead_simple() {
+        check_metrics::<ElixirParser>("x = 1 + 2", "foo.ex", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
+            {
+              "n1": 2.0,
+              "N1": 3.0,
+              "n2": 3.0,
+              "N2": 3.0,
+              "length": 6.0,
+              "estimated_program_length": 6.754887502163468,
+              "purity_ratio": 1.1258145836939113,
+              "vocabulary": 5.0,
+              "volume": 13.931568569324174,
+              "difficulty": 1.0,
+              "level": 1.0,
+              "effort": 13.931568569324174,
+              "time": 0.7739760316291208,
+              "bugs": 0.0019299471801733172
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn elixir_halstead_moderate() {
+        check_metrics::<ElixirParser>(
+            "def add(a, b) do a + b end",
+            "foo.ex",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 5.0,
+                  "N1": 7.0,
+                  "n2": 4.0,
+                  "N2": 6.0,
+                  "length": 13.0,
+                  "estimated_program_length": 19.60964047443681,
+                  "purity_ratio": 1.5084338826489854,
+                  "vocabulary": 9.0,
+                  "volume": 41.209025018750054,
+                  "difficulty": 3.75,
+                  "level": 0.26666666666666666,
+                  "effort": 154.5338438203127,
+                  "time": 8.585213545572929,
+                  "bugs": 0.009599040339100903
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn elixir_halstead_complex() {
+        check_metrics::<ElixirParser>(
+            "def calculate(a, b, c) do
+                 x = a * b + c
+                 y = div(x, 2) - a
+                 if y > 0, do: y, else: -y
+             end",
+            "foo.ex",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 9.0,
+                  "N1": 21.0,
+                  "n2": 12.0,
+                  "N2": 20.0,
+                  "length": 41.0,
+                  "estimated_program_length": 71.54887502163469,
+                  "purity_ratio": 1.7450945127227973,
+                  "vocabulary": 21.0,
+                  "volume": 180.0850143339292,
+                  "difficulty": 7.5,
+                  "level": 0.13333333333333333,
+                  "effort": 1350.6376075044689,
+                  "time": 75.03542263913715,
+                  "bugs": 0.040729083484724496
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn elixir_halstead_boolean_heavy() {
+        check_metrics::<ElixirParser>(
+            "def validate(x, y), do: x > 0 and y > 0 or x < 0 and y < 0",
+            "foo.ex",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 7.0,
+                  "N1": 18.0,
+                  "n2": 6.0,
+                  "N2": 13.0,
+                  "length": 31.0,
+                  "estimated_program_length": 35.161259458730164,
+                  "purity_ratio": 1.1342341760880699,
+                  "vocabulary": 13.0,
+                  "volume": 114.71363126237385,
+                  "difficulty": 7.583333333333333,
+                  "level": 0.13186813186813187,
+                  "effort": 869.9117037396684,
+                  "time": 48.32842798553713,
+                  "bugs": 0.030375879491505737
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn elixir_halstead_mixed_operators() {
+        check_metrics::<ElixirParser>(
+            "def process(a), do: \"Result: #{a * 2 + div(a, 3)}\"",
+            "foo.ex",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 5.0,
+                  "N1": 10.0,
+                  "n2": 8.0,
+                  "N2": 10.0,
+                  "length": 20.0,
+                  "estimated_program_length": 35.60964047443681,
+                  "purity_ratio": 1.7804820237218404,
+                  "vocabulary": 13.0,
+                  "volume": 74.00879436282185,
+                  "difficulty": 3.125,
+                  "level": 0.32,
+                  "effort": 231.27748238381827,
+                  "time": 12.848749021323236,
+                  "bugs": 0.012559363956854735
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn gleam_halstead_simple() {
+        check_metrics::<GleamParser>("let x = 1 + 2", "foo.gleam", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
+            {
+              "n1": 4.0,
+              "N1": 4.0,
+              "n2": 3.0,
+              "N2": 3.0,
+              "length": 7.0,
+              "estimated_program_length": 12.754887502163468,
+              "purity_ratio": 1.8221267860233525,
+              "vocabulary": 7.0,
+              "volume": 19.651484454403228,
+              "difficulty": 2.0,
+              "level": 0.5,
+              "effort": 39.302968908806456,
+              "time": 2.1834982727114696,
+              "bugs": 0.0038532659414573967
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn gleam_halstead_moderate() {
+        check_metrics::<GleamParser>(
+            "pub fn add(a: Int, b: Int) -> Int { a + b }",
+            "foo.gleam",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.halstead,
+                    @r#"
+                {
+                  "n1": 3.0,
+                  "N1": 3.0,
+                  "n2": 3.0,
+                  "N2": 5.0,
+                  "length": 8.0,
+                  "estimated_program_length": 9.509775004326936,
+                  "purity_ratio": 1.188721875540867,
+                  "vocabulary": 6.0,
+                  "volume": 20.67970000576925,
+                  "difficulty": 2.5,
+                  "level": 0.4,
+                  "effort": 51.69925001442312,
+                  "time": 2.87218055635684,
+                  "bugs": 0.004625956812489424
+                }
+                "#
+                );
+            },
+        );
+    }
 }

@@ -3523,4 +3523,1029 @@ mod tests {
       },
     );
     }
+
+    // Kotlin LOC tests
+
+    #[test]
+    fn kotlin_loc_simple() {
+        check_metrics::<KotlinParser>(
+            "fun add(a: Int, b: Int): Int {
+    return a + b
+}",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_loc_with_comments() {
+        check_metrics::<KotlinParser>(
+            "// This function calculates factorial
+fun factorial(n: Int): Int {
+    // Base case
+    if (n <= 1) return 1
+    /* Recursive case:
+       multiply n by factorial of n-1 */
+    return n * factorial(n - 1)
+}",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_loc_blank_lines() {
+        check_metrics::<KotlinParser>(
+            "fun process(x: Int): Int {
+    val doubled = x * 2
+
+    val incremented = doubled + 1
+
+    return incremented
+}",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_loc_moderate() {
+        check_metrics::<KotlinParser>(
+            "fun findMax(numbers: List<Int>): Int? {
+    if (numbers.isEmpty()) {
+        return null
+    }
+
+    var max = numbers[0]
+    for (num in numbers) {
+        if (num > max) {
+            max = num
+        }
+    }
+
+    return max
+}",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_loc_complex() {
+        check_metrics::<KotlinParser>(
+            "class Calculator {
+    private val history = mutableListOf<String>()
+
+    fun add(a: Double, b: Double): Double {
+        val result = a + b
+        history.add(\"$a + $b = $result\")
+        return result
+    }
+
+    fun subtract(a: Double, b: Double): Double {
+        val result = a - b
+        history.add(\"$a - $b = $result\")
+        return result
+    }
+
+    fun multiply(a: Double, b: Double): Double {
+        val result = a * b
+        history.add(\"$a * $b = $result\")
+        return result
+    }
+
+    fun divide(a: Double, b: Double): Double? {
+        if (b == 0.0) {
+            return null
+        }
+        val result = a / b
+        history.add(\"$a / $b = $result\")
+        return result
+    }
+
+    fun getHistory(): List<String> {
+        return history.toList()
+    }
+
+    fun clearHistory() {
+        history.clear()
+    }
+}",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.125,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.125,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 6.0,
+                  "blank_max": 6.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    // Lua LOC tests
+
+    #[test]
+    fn lua_loc_simple() {
+        check_metrics::<LuaParser>(
+            "function add(a, b)
+    return a + b
+end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_loc_with_comments() {
+        check_metrics::<LuaParser>(
+            "-- Calculate factorial of n
+function factorial(n)
+    -- Base case
+    if n <= 1 then
+        return 1
+    end
+    --[[ Recursive case:
+         multiply n by factorial of n-1 ]]
+    return n * factorial(n - 1)
+end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_loc_blank_lines() {
+        check_metrics::<LuaParser>(
+            "function process(x)
+    local doubled = x * 2
+
+    local incremented = doubled + 1
+
+    return incremented
+end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_loc_moderate() {
+        check_metrics::<LuaParser>(
+            "function findMax(numbers)
+    if #numbers == 0 then
+        return nil
+    end
+
+    local max = numbers[1]
+    for i = 2, #numbers do
+        if numbers[i] > max then
+            max = numbers[i]
+        end
+    end
+
+    return max
+end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_loc_complex() {
+        check_metrics::<LuaParser>(
+            "Calculator = {}
+Calculator.__index = Calculator
+
+function Calculator.new()
+    local self = setmetatable({}, Calculator)
+    self.history = {}
+    return self
+end
+
+function Calculator:add(a, b)
+    local result = a + b
+    table.insert(self.history, a .. \" + \" .. b .. \" = \" .. result)
+    return result
+end
+
+function Calculator:subtract(a, b)
+    local result = a - b
+    table.insert(self.history, a .. \" - \" .. b .. \" = \" .. result)
+    return result
+end
+
+function Calculator:multiply(a, b)
+    local result = a * b
+    table.insert(self.history, a .. \" * \" .. b .. \" = \" .. result)
+    return result
+end
+
+function Calculator:divide(a, b)
+    if b == 0 then
+        return nil
+    end
+    local result = a / b
+    table.insert(self.history, a .. \" / \" .. b .. \" = \" .. result)
+    return result
+end
+
+function Calculator:getHistory()
+    return self.history
+end
+
+function Calculator:clearHistory()
+    self.history = {}
+end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 7.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    // Go LOC tests
+
+    #[test]
+    fn go_loc_simple() {
+        check_metrics::<GoParser>(
+            "func add(a int, b int) int {
+    return a + b
+}",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_loc_with_comments() {
+        check_metrics::<GoParser>(
+            "// Calculate factorial of n
+func factorial(n int) int {
+    // Base case
+    if n <= 1 {
+        return 1
+    }
+    /* Recursive case:
+       multiply n by factorial of n-1 */
+    return n * factorial(n - 1)
+}",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_loc_blank_lines() {
+        check_metrics::<GoParser>(
+            "func process(x int) int {
+    doubled := x * 2
+
+    incremented := doubled + 1
+
+    return incremented
+}",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_loc_moderate() {
+        check_metrics::<GoParser>(
+            "func findMax(numbers []int) (int, bool) {
+    if len(numbers) == 0 {
+        return 0, false
+    }
+
+    max := numbers[0]
+    for _, num := range numbers {
+        if num > max {
+            max = num
+        }
+    }
+
+    return max, true
+}",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.5,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.5,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_loc_complex() {
+        check_metrics::<GoParser>(
+            "type Calculator struct {
+    history []string
+}
+
+func NewCalculator() *Calculator {
+    return &Calculator{
+        history: make([]string, 0),
+    }
+}
+
+func (c *Calculator) Add(a, b float64) float64 {
+    result := a + b
+    c.history = append(c.history, fmt.Sprintf(\"%f + %f = %f\", a, b, result))
+    return result
+}
+
+func (c *Calculator) Subtract(a, b float64) float64 {
+    result := a - b
+    c.history = append(c.history, fmt.Sprintf(\"%f - %f = %f\", a, b, result))
+    return result
+}
+
+func (c *Calculator) Multiply(a, b float64) float64 {
+    result := a * b
+    c.history = append(c.history, fmt.Sprintf(\"%f * %f = %f\", a, b, result))
+    return result
+}
+
+func (c *Calculator) Divide(a, b float64) (float64, error) {
+    if b == 0 {
+        return 0, errors.New(\"division by zero\")
+    }
+    result := a / b
+    c.history = append(c.history, fmt.Sprintf(\"%f / %f = %f\", a, b, result))
+    return result, nil
+}
+
+func (c *Calculator) GetHistory() []string {
+    return c.history
+}
+
+func (c *Calculator) ClearHistory() {
+    c.history = make([]string, 0)
+}",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 7.0,
+                  "sloc_average": 0.875,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.875,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    // C# LOC tests
+
+    #[test]
+    fn csharp_loc_simple() {
+        check_metrics::<CsharpParser>(
+            "int Add(int a, int b) {
+    return a + b;
+}",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 1.0,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_loc_with_comments() {
+        check_metrics::<CsharpParser>(
+            "// Calculate factorial of n
+int Factorial(int n) {
+    // Base case
+    if (n <= 1) {
+        return 1;
+    }
+    /* Recursive case:
+       multiply n by factorial of n-1 */
+    return n * Factorial(n - 1);
+}",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 1.0,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_loc_blank_lines() {
+        check_metrics::<CsharpParser>(
+            "int Process(int x) {
+    int doubled = x * 2;
+
+    int incremented = doubled + 1;
+
+    return incremented;
+}",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 1.0,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_loc_moderate() {
+        check_metrics::<CsharpParser>(
+            "int? FindMax(List<int> numbers) {
+    if (numbers.Count == 0) {
+        return null;
+    }
+
+    int max = numbers[0];
+    foreach (int num in numbers) {
+        if (num > max) {
+            max = num;
+        }
+    }
+
+    return max;
+}",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 1.0,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 1.0,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 1.0,
+                  "blank_max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_loc_complex() {
+        check_metrics::<CsharpParser>(
+            "class Calculator {
+    private List<string> history = new List<string>();
+
+    public double Add(double a, double b) {
+        double result = a + b;
+        history.Add($\"{a} + {b} = {result}\");
+        return result;
+    }
+
+    public double Subtract(double a, double b) {
+        double result = a - b;
+        history.Add($\"{a} - {b} = {result}\");
+        return result;
+    }
+
+    public double Multiply(double a, double b) {
+        double result = a * b;
+        history.Add($\"{a} * {b} = {result}\");
+        return result;
+    }
+
+    public double? Divide(double a, double b) {
+        if (b == 0) {
+            return null;
+        }
+        double result = a / b;
+        history.Add($\"{a} / {b} = {result}\");
+        return result;
+    }
+
+    public List<string> GetHistory() {
+        return new List<string>(history);
+    }
+
+    public void ClearHistory() {
+        history.Clear();
+    }
+}",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.loc,
+                    @r#"
+                {
+                  "sloc": 1.0,
+                  "ploc": 0.0,
+                  "lloc": 0.0,
+                  "cloc": 0.0,
+                  "blank": 1.0,
+                  "sloc_average": 0.125,
+                  "ploc_average": 0.0,
+                  "lloc_average": 0.0,
+                  "cloc_average": 0.0,
+                  "blank_average": 0.125,
+                  "sloc_min": 1.0,
+                  "sloc_max": 1.0,
+                  "cloc_min": 0.0,
+                  "cloc_max": 0.0,
+                  "ploc_min": 0.0,
+                  "ploc_max": 0.0,
+                  "lloc_min": 0.0,
+                  "lloc_max": 0.0,
+                  "blank_min": 6.0,
+                  "blank_max": 6.0
+                }
+                "#
+                );
+            },
+        );
+    }
 }

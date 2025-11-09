@@ -253,9 +253,6 @@ fn increase_nesting(stats: &mut Stats, nesting: &mut usize, depth: usize, lambda
     stats.nesting = *nesting + depth + lambda;
     increment(stats);
     *nesting += 1;
-    // Reset boolean sequence after processing each control structure
-    // to prevent boolean operator context from carrying over to next statement
-    stats.boolean_seq.reset();
 }
 
 fn elixir_call_matches(node: &Node, keywords: &[&str]) -> bool {
@@ -762,7 +759,10 @@ impl Cognitive for GoCode {
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind() {
-            "if_statement" | "for_statement" | "switch_statement" | "select_statement"
+            "if_statement"
+            | "for_statement"
+            | "switch_statement"
+            | "select_statement"
             | "type_switch_statement" => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
@@ -936,10 +936,10 @@ mod tests {
                     metric.cognitive,
                     @r#"
                 {
-                  "sum": 4.0,
-                  "average": 4.0,
+                  "sum": 3.0,
+                  "average": 3.0,
                   "min": 0.0,
-                  "max": 4.0
+                  "max": 3.0
                 }
                 "#
                 );
@@ -1068,10 +1068,10 @@ mod tests {
                     metric.cognitive,
                     @r###"
                     {
-                      "sum": 4.0,
-                      "average": 4.0,
+                      "sum": 3.0,
+                      "average": 3.0,
                       "min": 0.0,
-                      "max": 4.0
+                      "max": 3.0
                     }"###
                 );
             },
@@ -2218,10 +2218,10 @@ mod tests {
                     metric.cognitive,
                     @r###"
                     {
-                      "sum": 4.0,
-                      "average": 4.0,
+                      "sum": 3.0,
+                      "average": 3.0,
                       "min": 0.0,
-                      "max": 4.0
+                      "max": 3.0
                     }"###
                 );
             },
@@ -2311,6 +2311,699 @@ mod tests {
                       "max": 3.0
                     }"###
                 );
+            },
+        );
+    }
+
+    // ========== KOTLIN LANGUAGE TESTS ==========
+
+    #[test]
+    fn kotlin_simple_function() {
+        check_metrics::<KotlinParser>(
+            "fun f(a: Boolean, b: Boolean, c: Boolean, d: Boolean) {
+                if (a && b) { // +2 (+1 &&)
+                    println(\"test1\")
+                }
+                if (c && d) { // +2 (+1 &&)
+                    println(\"test2\")
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 4.0,
+                      "average": 4.0,
+                      "min": 0.0,
+                      "max": 4.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_no_cognitive() {
+        check_metrics::<KotlinParser>(
+            "fun f(a: Int): Int {
+                return a * 2
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 0.0,
+                      "average": null,
+                      "min": 0.0,
+                      "max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    // ========== LUA LANGUAGE TESTS ==========
+
+    #[test]
+    fn lua_simple_function() {
+        check_metrics::<LuaParser>(
+            "function f(a, b, c, d)
+                if a and b then  -- +2 (+1 and)
+                    print('test1')
+                end
+                if c and d then  -- +2 (+1 and)
+                    print('test2')
+                end
+            end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 1.0,
+                      "min": 0.0,
+                      "max": 2.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_no_cognitive() {
+        check_metrics::<LuaParser>(
+            "function f(a)
+                return a * 2
+            end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 0.0,
+                      "average": 0.0,
+                      "min": 0.0,
+                      "max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    // ========== GO LANGUAGE TESTS ==========
+
+    #[test]
+    fn go_simple_function() {
+        check_metrics::<GoParser>(
+            "package main
+
+            func f(a bool, b bool, c bool, d bool) {
+                if a && b { // +2 (+1 &&)
+                    println(\"test1\")
+                }
+                if c && d { // +2 (+1 &&)
+                    println(\"test2\")
+                }
+            }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 4.0,
+                      "average": 4.0,
+                      "min": 0.0,
+                      "max": 4.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_no_cognitive() {
+        check_metrics::<GoParser>(
+            "package main
+
+            func f(a int) int {
+                return a * 2
+            }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 0.0,
+                      "average": null,
+                      "min": 0.0,
+                      "max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    // ========== C# LANGUAGE TESTS ==========
+
+    #[test]
+    fn csharp_simple_function() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public void f(bool a, bool b, bool c, bool d) {
+                    if (a && b) { // +2 (+1 &&)
+                        Console.WriteLine(\"test1\");
+                    }
+                    if (c && d) { // +2 (+1 &&)
+                        Console.WriteLine(\"test2\");
+                    }
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 4.0,
+                      "average": 4.0,
+                      "min": 0.0,
+                      "max": 4.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_no_cognitive() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public int f(int a) {
+                    return a * 2;
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.cognitive,
+                    @r###"
+                    {
+                      "sum": 0.0,
+                      "average": null,
+                      "min": 0.0,
+                      "max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    // ========== EXTENDED KOTLIN TESTS ==========
+
+    #[test]
+    fn kotlin_nested_if() {
+        check_metrics::<KotlinParser>(
+            "fun f(a: Boolean, b: Boolean, c: Boolean) {
+                if (a) {            // +1
+                    if (b) {        // +2 (nesting = 1)
+                        if (c) {    // +3 (nesting = 2)
+                            println(\"deep\")
+                        }
+                    }
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 6.0,
+                  "average": 6.0,
+                  "min": 0.0,
+                  "max": 6.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_switch_expression() {
+        check_metrics::<KotlinParser>(
+            "fun f(x: Int): String {
+                return when(x) {  // +1 (when is a control structure)
+                    1 -> \"one\"
+                    2 -> \"two\"
+                    3 -> \"three\"
+                    else -> \"other\"
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 1.0,
+                  "average": 1.0,
+                  "min": 0.0,
+                  "max": 1.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_for_loop() {
+        check_metrics::<KotlinParser>(
+            "fun f(items: List<Int>) {
+                for (item in items) {  // +1
+                    if (item > 0) {    // +2 (nesting = 1)
+                        println(item)
+                    }
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_try_catch() {
+        check_metrics::<KotlinParser>(
+            "fun f() {
+                try {                                       // +1
+                    val x = 10 / 0
+                } catch (e: ArithmeticException) {          // +1
+                    println(\"error\")
+                } finally {
+                    println(\"done\")
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_lambda() {
+        check_metrics::<KotlinParser>(
+            "fun f() {
+                val list = listOf(1, 2, 3)
+                list.filter { it > 1 }
+                     .map { it * 2 }
+            }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#);
+            },
+        );
+    }
+
+    // ========== EXTENDED LUA TESTS ==========
+
+    #[test]
+    fn lua_if_else() {
+        check_metrics::<LuaParser>(
+            "function f(a, b)
+                if a > b then
+                    return a
+                else
+                    return b
+                end
+            end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 2.0,
+                  "average": 1.0,
+                  "min": 0.0,
+                  "max": 2.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn lua_nested_loops() {
+        check_metrics::<LuaParser>(
+            "function f(n)
+                for i = 1, n do       -- +1
+                    for j = 1, n do   -- +2 (nesting = 1)
+                        if i == j then  -- +3 (nesting = 2)
+                            print(i)
+                        end
+                    end
+                end
+            end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 6.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 6.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn lua_elseif_chain() {
+        check_metrics::<LuaParser>(
+            "function f(x)
+                if x < 0 then           -- +1
+                    print(\"negative\")
+                elseif x == 0 then      -- +1
+                    print(\"zero\")
+                elseif x < 10 then      -- +1
+                    print(\"small\")
+                else                    -- +0 (else doesn't add complexity)
+                    print(\"large\")
+                end
+            end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 4.0,
+                  "average": 2.0,
+                  "min": 0.0,
+                  "max": 4.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn lua_while_loop() {
+        check_metrics::<LuaParser>(
+            "function f(n)
+                local i = 0
+                while i < n do        -- +1
+                    if i % 2 == 0 then -- +2 (nesting = 1)
+                        print(i)
+                    end
+                    i = i + 1
+                end
+            end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 1.5,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    // ========== EXTENDED GO TESTS ==========
+
+    #[test]
+    fn go_if_else_chain() {
+        check_metrics::<GoParser>(
+            "package main
+
+            func f(x int) string {
+                if x < 0 {           // +1
+                    return \"negative\"
+                } else if x == 0 {   // +1
+                    return \"zero\"
+                } else if x < 10 {   // +1
+                    return \"small\"
+                } else {             // +0 (else doesn't add complexity)
+                    return \"large\"
+                }
+            }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 6.0,
+                  "average": 6.0,
+                  "min": 0.0,
+                  "max": 6.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn go_switch_statement() {
+        check_metrics::<GoParser>(
+            "package main
+
+            func f(day int) string {
+                switch day {  // +1 (switch is a control structure)
+                case 1:
+                    return \"Monday\"
+                case 2:
+                    return \"Tuesday\"
+                case 3:
+                    return \"Wednesday\"
+                default:
+                    return \"Other\"
+                }
+            }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn go_for_range_loop() {
+        check_metrics::<GoParser>(
+            "package main
+
+            func f(items []int) {
+                for i, v := range items {  // +1
+                    if v > 0 {              // +2 (nesting = 1)
+                        println(i, v)
+                    }
+                }
+            }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn go_error_handling() {
+        check_metrics::<GoParser>(
+            "package main
+
+            func f() error {
+                result, err := doSomething()
+                if err != nil {
+                    if isRecoverable(err) {
+                        return retry()
+                    }
+                    return err
+                }
+                return nil
+            }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    // ========== EXTENDED C# TESTS ==========
+
+    #[test]
+    fn csharp_switch_expression() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public string F(int day) {
+                    return day switch {  // +1 (switch is a control structure)
+                        1 => \"Monday\",
+                        2 => \"Tuesday\",
+                        3 => \"Wednesday\",
+                        _ => \"Other\"
+                    };
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_foreach_loop() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public void F(List<int> items) {
+                    foreach (int item in items) {  // +1
+                        if (item > 0) {            // +2 (nesting = 1)
+                            Console.WriteLine(item);
+                        }
+                    }
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_try_catch_finally() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public void F() {
+                    try {                                      // +1
+                        var x = 10 / 0;
+                    } catch (DivideByZeroException) {          // +1
+                        Console.WriteLine(\"error\");
+                    } finally {
+                        Console.WriteLine(\"done\");
+                    }
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 0.0,
+                  "max": 3.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_null_coalescing() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public string F(string a, string b) {
+                    var result = a ?? b ?? \"default\";
+                    return result;
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#);
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_linq_query() {
+        check_metrics::<CsharpParser>(
+            "class X {
+                public List<int> F(List<int> items) {
+                    var result = items
+                        .Where(x => x > 0)
+                        .Select(x => x * 2)
+                        .ToList();
+                    return result;
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(metric.cognitive, @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#);
             },
         );
     }

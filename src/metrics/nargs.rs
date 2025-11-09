@@ -973,4 +973,783 @@ mod tests {
             },
         );
     }
+
+    #[test]
+    fn kotlin_nargs_no_args() {
+        check_metrics::<KotlinParser>("fun f() { return 1 }", "foo.kt", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r###"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }"###
+            );
+        });
+    }
+
+    #[test]
+    fn kotlin_nargs_single_arg() {
+        check_metrics::<KotlinParser>("fun f(a: Int) { return a }", "foo.kt", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r#"
+            {
+              "total_functions": 0.0,
+              "total_closures": 0.0,
+              "average_functions": 0.0,
+              "average_closures": 0.0,
+              "total": 0.0,
+              "average": 0.0,
+              "functions_min": 0.0,
+              "functions_max": 0.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn kotlin_nargs_multiple_args() {
+        check_metrics::<KotlinParser>(
+            "fun calculate(a: Int, b: Int, c: Int) { return a + b + c }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_nargs_default_args() {
+        check_metrics::<KotlinParser>(
+            "fun greet(name: String = \"World\", count: Int = 1) { println(name) }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_nargs_vararg() {
+        check_metrics::<KotlinParser>(
+            "fun printAll(vararg messages: String) { messages.forEach { println(it) } }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_nargs_no_args() {
+        check_metrics::<LuaParser>("function f() return 1 end", "foo.lua", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r#"
+            {
+              "total_functions": 2.0,
+              "total_closures": 0.0,
+              "average_functions": 2.0,
+              "average_closures": 0.0,
+              "total": 2.0,
+              "average": 1.0,
+              "functions_min": 0.0,
+              "functions_max": 2.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn lua_nargs_single_arg() {
+        check_metrics::<LuaParser>("function f(a) return a end", "foo.lua", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r#"
+            {
+              "total_functions": 3.0,
+              "total_closures": 0.0,
+              "average_functions": 3.0,
+              "average_closures": 0.0,
+              "total": 3.0,
+              "average": 1.5,
+              "functions_min": 0.0,
+              "functions_max": 3.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn lua_nargs_multiple_args() {
+        check_metrics::<LuaParser>(
+            "function add(a, b, c) return a + b + c end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 7.0,
+                  "total_closures": 0.0,
+                  "average_functions": 7.0,
+                  "average_closures": 0.0,
+                  "total": 7.0,
+                  "average": 3.5,
+                  "functions_min": 0.0,
+                  "functions_max": 7.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_nargs_vararg() {
+        check_metrics::<LuaParser>(
+            "function sum(...) local args = {...}; return args end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 3.0,
+                  "total_closures": 0.0,
+                  "average_functions": 3.0,
+                  "average_closures": 0.0,
+                  "total": 3.0,
+                  "average": 1.5,
+                  "functions_min": 0.0,
+                  "functions_max": 3.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_nargs_nested_functions() {
+        check_metrics::<LuaParser>(
+            "function outer(a, b)
+                 function inner(x, y, z)
+                     return x + y + z
+                 end
+                 return inner(a, b, 0)
+             end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 12.0,
+                  "total_closures": 0.0,
+                  "average_functions": 6.0,
+                  "average_closures": 0.0,
+                  "total": 12.0,
+                  "average": 3.0,
+                  "functions_min": 0.0,
+                  "functions_max": 7.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_nargs_no_args() {
+        check_metrics::<GoParser>("func f() int { return 1 }", "foo.go", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r#"
+            {
+              "total_functions": 2.0,
+              "total_closures": 0.0,
+              "average_functions": 2.0,
+              "average_closures": 0.0,
+              "total": 2.0,
+              "average": 2.0,
+              "functions_min": 0.0,
+              "functions_max": 2.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn go_nargs_single_arg() {
+        check_metrics::<GoParser>("func f(a int) int { return a }", "foo.go", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r#"
+            {
+              "total_functions": 3.0,
+              "total_closures": 0.0,
+              "average_functions": 3.0,
+              "average_closures": 0.0,
+              "total": 3.0,
+              "average": 3.0,
+              "functions_min": 0.0,
+              "functions_max": 3.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn go_nargs_multiple_args() {
+        check_metrics::<GoParser>(
+            "func add(a int, b int, c int) int { return a + b + c }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 7.0,
+                  "total_closures": 0.0,
+                  "average_functions": 7.0,
+                  "average_closures": 0.0,
+                  "total": 7.0,
+                  "average": 7.0,
+                  "functions_min": 0.0,
+                  "functions_max": 7.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_nargs_variadic() {
+        check_metrics::<GoParser>(
+            "func sum(nums ...int) int { total := 0; return total }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 3.0,
+                  "total_closures": 0.0,
+                  "average_functions": 3.0,
+                  "average_closures": 0.0,
+                  "total": 3.0,
+                  "average": 3.0,
+                  "functions_min": 0.0,
+                  "functions_max": 3.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_nargs_multiple_return_values() {
+        check_metrics::<GoParser>(
+            "func divide(a int, b int) (int, error) { return a / b, nil }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 5.0,
+                  "total_closures": 0.0,
+                  "average_functions": 5.0,
+                  "average_closures": 0.0,
+                  "total": 5.0,
+                  "average": 5.0,
+                  "functions_min": 0.0,
+                  "functions_max": 5.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_nargs_no_args() {
+        check_metrics::<CsharpParser>("int F() { return 1; }", "foo.cs", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r###"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }"###
+            );
+        });
+    }
+
+    #[test]
+    fn csharp_nargs_single_arg() {
+        check_metrics::<CsharpParser>("int F(int a) { return a; }", "foo.cs", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nargs,
+                @r#"
+            {
+              "total_functions": 0.0,
+              "total_closures": 0.0,
+              "average_functions": 0.0,
+              "average_closures": 0.0,
+              "total": 0.0,
+              "average": 0.0,
+              "functions_min": 0.0,
+              "functions_max": 0.0,
+              "closures_min": 0.0,
+              "closures_max": 0.0
+            }
+            "#
+            );
+        });
+    }
+
+    #[test]
+    fn csharp_nargs_multiple_args() {
+        check_metrics::<CsharpParser>(
+            "int Add(int a, int b, int c) { return a + b + c; }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_nargs_optional_args() {
+        check_metrics::<CsharpParser>(
+            "void Greet(string name = \"World\", int count = 1) { Console.WriteLine(name); }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_nargs_params_array() {
+        check_metrics::<CsharpParser>(
+            "int Sum(params int[] numbers) { return numbers.Sum(); }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 0.0,
+                  "total_closures": 0.0,
+                  "average_functions": 0.0,
+                  "average_closures": 0.0,
+                  "total": 0.0,
+                  "average": 0.0,
+                  "functions_min": 0.0,
+                  "functions_max": 0.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn java_nargs_no_args() {
+        check_metrics::<JavaParser>(
+            "class A { public int f() { return 1; } }",
+            "foo.java",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 2.0,
+                  "total_closures": 0.0,
+                  "average_functions": 2.0,
+                  "average_closures": 0.0,
+                  "total": 2.0,
+                  "average": 2.0,
+                  "functions_min": 0.0,
+                  "functions_max": 2.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn java_nargs_single_arg() {
+        check_metrics::<JavaParser>(
+            "class A { public int f(int a) { return a; } }",
+            "foo.java",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 3.0,
+                  "total_closures": 0.0,
+                  "average_functions": 3.0,
+                  "average_closures": 0.0,
+                  "total": 3.0,
+                  "average": 3.0,
+                  "functions_min": 0.0,
+                  "functions_max": 3.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn java_nargs_multiple_args() {
+        check_metrics::<JavaParser>(
+            "class A { public int add(int a, int b, int c) { return a + b + c; } }",
+            "foo.java",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 7.0,
+                  "total_closures": 0.0,
+                  "average_functions": 7.0,
+                  "average_closures": 0.0,
+                  "total": 7.0,
+                  "average": 7.0,
+                  "functions_min": 0.0,
+                  "functions_max": 7.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn java_nargs_varargs() {
+        check_metrics::<JavaParser>(
+            "class A { public int sum(int... numbers) { int total = 0; return total; } }",
+            "foo.java",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 3.0,
+                  "total_closures": 0.0,
+                  "average_functions": 3.0,
+                  "average_closures": 0.0,
+                  "total": 3.0,
+                  "average": 3.0,
+                  "functions_min": 0.0,
+                  "functions_max": 3.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn java_nargs_multiple_methods() {
+        check_metrics::<JavaParser>(
+            "class A {
+                 public int f(int a) { return a; }
+                 public int g(int x, int y) { return x + y; }
+             }",
+            "foo.java",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r#"
+                {
+                  "total_functions": 8.0,
+                  "total_closures": 0.0,
+                  "average_functions": 4.0,
+                  "average_closures": 0.0,
+                  "total": 8.0,
+                  "average": 4.0,
+                  "functions_min": 0.0,
+                  "functions_max": 5.0,
+                  "closures_min": 0.0,
+                  "closures_max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_nargs_no_args() {
+        check_metrics::<TypescriptParser>(
+            "function f(): number { return 1; }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r###"
+                    {
+                      "total_functions": 0.0,
+                      "total_closures": 0.0,
+                      "average_functions": 0.0,
+                      "average_closures": 0.0,
+                      "total": 0.0,
+                      "average": 0.0,
+                      "functions_min": 0.0,
+                      "functions_max": 0.0,
+                      "closures_min": 0.0,
+                      "closures_max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_nargs_single_arg() {
+        check_metrics::<TypescriptParser>(
+            "function f(a: number): number { return a; }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r###"
+                    {
+                      "total_functions": 1.0,
+                      "total_closures": 0.0,
+                      "average_functions": 1.0,
+                      "average_closures": 0.0,
+                      "total": 1.0,
+                      "average": 1.0,
+                      "functions_min": 0.0,
+                      "functions_max": 1.0,
+                      "closures_min": 0.0,
+                      "closures_max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_nargs_multiple_args() {
+        check_metrics::<TypescriptParser>(
+            "function add(a: number, b: number, c: number): number { return a + b + c; }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r###"
+                    {
+                      "total_functions": 3.0,
+                      "total_closures": 0.0,
+                      "average_functions": 3.0,
+                      "average_closures": 0.0,
+                      "total": 3.0,
+                      "average": 3.0,
+                      "functions_min": 0.0,
+                      "functions_max": 3.0,
+                      "closures_min": 0.0,
+                      "closures_max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_nargs_optional_args() {
+        check_metrics::<TypescriptParser>(
+            "function greet(name?: string, count?: number): void { console.log(name); }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r###"
+                    {
+                      "total_functions": 2.0,
+                      "total_closures": 0.0,
+                      "average_functions": 2.0,
+                      "average_closures": 0.0,
+                      "total": 2.0,
+                      "average": 2.0,
+                      "functions_min": 0.0,
+                      "functions_max": 2.0,
+                      "closures_min": 0.0,
+                      "closures_max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_nargs_rest_params() {
+        check_metrics::<TypescriptParser>(
+            "function sum(...numbers: number[]): number { return 0; }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nargs,
+                    @r###"
+                    {
+                      "total_functions": 1.0,
+                      "total_closures": 0.0,
+                      "average_functions": 1.0,
+                      "average_closures": 0.0,
+                      "total": 1.0,
+                      "average": 1.0,
+                      "functions_min": 0.0,
+                      "functions_max": 1.0,
+                      "closures_min": 0.0,
+                      "closures_max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
 }

@@ -154,15 +154,27 @@ impl ErrorHandlingMetrics {
         }
 
         // Calculate metrics
-        let error_type_coverage: f64 = if error_handlers == 0 { 0.0_f64 } else { 1.0_f64 };
-        let unhandled_ratio = if (try_blocks + catch_blocks) == 0 { 
-            0.0 
-        } else { 
-            unhandled_calls as f64 / (try_blocks + catch_blocks) as f64 
+        let error_type_coverage: f64 = if error_handlers == 0 {
+            0.0_f64
+        } else {
+            1.0_f64
+        };
+        let unhandled_ratio = if (try_blocks + catch_blocks) == 0 {
+            0.0
+        } else {
+            unhandled_calls as f64 / (try_blocks + catch_blocks) as f64
         };
         let specific_catches_ratio: f64 = if catch_blocks == 0 { 0.0_f64 } else { 1.0_f64 };
-        let logging_coverage = if error_handlers == 0 { 0.0 } else { log_statements as f64 / error_handlers as f64 };
-        let fallback_coverage = if try_blocks == 0 { 0.0 } else { catch_blocks as f64 / try_blocks as f64 };
+        let logging_coverage = if error_handlers == 0 {
+            0.0
+        } else {
+            log_statements as f64 / error_handlers as f64
+        };
+        let fallback_coverage = if try_blocks == 0 {
+            0.0
+        } else {
+            catch_blocks as f64 / try_blocks as f64
+        };
 
         Self::calculate(ErrorHandlingInputs {
             error_type_coverage: error_type_coverage.clamp(0.0, 1.0),

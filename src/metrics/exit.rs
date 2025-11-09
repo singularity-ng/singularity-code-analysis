@@ -435,4 +435,727 @@ mod tests {
             },
         );
     }
+
+    #[test]
+    fn cpp_exit_single_return() {
+        check_metrics::<CppParser>(
+            "int add(int a, int b) {
+                 return a + b;
+             }",
+            "foo.cpp",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn cpp_exit_multiple_returns() {
+        check_metrics::<CppParser>(
+            "int abs(int x) {
+                 if (x < 0) {
+                     return -x;
+                 }
+                 return x;
+             }",
+            "foo.cpp",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn cpp_exit_early_returns() {
+        check_metrics::<CppParser>(
+            "int process(int x) {
+                 if (x < 0) return -1;
+                 if (x == 0) return 0;
+                 if (x > 100) return 100;
+                 return x;
+             }",
+            "foo.cpp",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn cpp_exit_nested_functions() {
+        check_metrics::<CppParser>(
+            "int outer(int a) {
+                 auto lambda = [](int x) { return x * 2; };
+                 return lambda(a);
+             }",
+            "foo.cpp",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn cpp_exit_switch_statement() {
+        check_metrics::<CppParser>(
+            "int classify(int x) {
+                 switch(x) {
+                     case 1: return 10;
+                     case 2: return 20;
+                     default: return 0;
+                 }
+             }",
+            "foo.cpp",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_exit_single_return() {
+        check_metrics::<KotlinParser>(
+            "fun add(a: Int, b: Int): Int { return a + b }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_exit_multiple_returns() {
+        check_metrics::<KotlinParser>(
+            "fun abs(x: Int): Int {
+                 if (x < 0) {
+                     return -x
+                 }
+                 return x
+             }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_exit_early_returns() {
+        check_metrics::<KotlinParser>(
+            "fun process(x: Int): Int {
+                 if (x < 0) return -1
+                 if (x == 0) return 0
+                 if (x > 100) return 100
+                 return x
+             }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_exit_when_expression() {
+        check_metrics::<KotlinParser>(
+            "fun classify(x: Int): Int {
+                 return when(x) {
+                     1 -> 10
+                     2 -> 20
+                     else -> 0
+                 }
+             }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_exit_exception() {
+        check_metrics::<KotlinParser>(
+            "fun validate(x: Int): Int {
+                 if (x < 0) throw IllegalArgumentException(\"Negative\")
+                 return x
+             }",
+            "foo.kt",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_exit_single_return() {
+        check_metrics::<LuaParser>(
+            "function add(a, b) return a + b end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_exit_multiple_returns() {
+        check_metrics::<LuaParser>(
+            "function abs(x)
+                 if x < 0 then
+                     return -x
+                 end
+                 return x
+             end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_exit_early_returns() {
+        check_metrics::<LuaParser>(
+            "function process(x)
+                 if x < 0 then return -1 end
+                 if x == 0 then return 0 end
+                 if x > 100 then return 100 end
+                 return x
+             end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_exit_nested_functions() {
+        check_metrics::<LuaParser>(
+            "function outer(a)
+                 function inner(x)
+                     return x * 2
+                 end
+                 return inner(a)
+             end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_exit_implicit_return() {
+        check_metrics::<LuaParser>(
+            "function implicit()
+                 local x = 42
+             end",
+            "foo.lua",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 0.0,
+                      "average": 0.0,
+                      "min": 0.0,
+                      "max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_exit_single_return() {
+        check_metrics::<GoParser>(
+            "func add(a int, b int) int { return a + b }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_exit_multiple_returns() {
+        check_metrics::<GoParser>(
+            "func abs(x int) int {
+                 if x < 0 {
+                     return -x
+                 }
+                 return x
+             }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_exit_early_returns() {
+        check_metrics::<GoParser>(
+            "func process(x int) int {
+                 if x < 0 { return -1 }
+                 if x == 0 { return 0 }
+                 if x > 100 { return 100 }
+                 return x
+             }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_exit_multiple_return_values() {
+        check_metrics::<GoParser>(
+            "func divide(a int, b int) (int, error) {
+                 if b == 0 {
+                     return 0, errors.New(\"division by zero\")
+                 }
+                 return a / b, nil
+             }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_exit_named_returns() {
+        check_metrics::<GoParser>(
+            "func calculate(x int) (result int) {
+                 result = x * 2
+                 return
+             }",
+            "foo.go",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_exit_single_return() {
+        check_metrics::<CsharpParser>(
+            "int Add(int a, int b) { return a + b; }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_exit_multiple_returns() {
+        check_metrics::<CsharpParser>(
+            "int Abs(int x) {
+                 if (x < 0) {
+                     return -x;
+                 }
+                 return x;
+             }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_exit_early_returns() {
+        check_metrics::<CsharpParser>(
+            "int Process(int x) {
+                 if (x < 0) return -1;
+                 if (x == 0) return 0;
+                 if (x > 100) return 100;
+                 return x;
+             }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_exit_exception() {
+        check_metrics::<CsharpParser>(
+            "int Validate(int x) {
+                 if (x < 0) throw new ArgumentException(\"Negative\");
+                 return x;
+             }",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": null,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_exit_expression_body() {
+        check_metrics::<CsharpParser>(
+            "int Square(int x) => x * x;",
+            "foo.cs",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 0.0,
+                      "average": null,
+                      "min": 0.0,
+                      "max": 0.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_exit_single_return() {
+        check_metrics::<TypescriptParser>(
+            "function add(a: number, b: number): number { return a + b; }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 1.0,
+                      "average": 1.0,
+                      "min": 0.0,
+                      "max": 1.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_exit_multiple_returns() {
+        check_metrics::<TypescriptParser>(
+            "function abs(x: number): number {
+                 if (x < 0) {
+                     return -x;
+                 }
+                 return x;
+             }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 2.0,
+                      "min": 0.0,
+                      "max": 2.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_exit_early_returns() {
+        check_metrics::<TypescriptParser>(
+            "function process(x: number): number {
+                 if (x < 0) return -1;
+                 if (x === 0) return 0;
+                 if (x > 100) return 100;
+                 return x;
+             }",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r###"
+                    {
+                      "sum": 4.0,
+                      "average": 4.0,
+                      "min": 0.0,
+                      "max": 4.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_exit_arrow_function() {
+        check_metrics::<TypescriptParser>(
+            "const square = (x: number): number => { return x * x; };",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 1.0,
+                  "average": 1.0,
+                  "min": 0.0,
+                  "max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn typescript_exit_implicit_return() {
+        check_metrics::<TypescriptParser>(
+            "const double = (x: number): number => x * 2;",
+            "foo.ts",
+            |metric| {
+                insta::assert_json_snapshot!(
+                    metric.nexits,
+                    @r#"
+                {
+                  "sum": 0.0,
+                  "average": 0.0,
+                  "min": 0.0,
+                  "max": 0.0
+                }
+                "#
+                );
+            },
+        );
+    }
 }

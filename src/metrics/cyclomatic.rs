@@ -292,15 +292,112 @@ impl Cyclomatic for JavaCode {
     }
 }
 
-implement_metric_trait!(
-    Cyclomatic,
-    KotlinCode,
-    PreprocCode,
-    CcommentCode,
-    LuaCode,
-    GoCode,
-    CsharpCode
-);
+impl Cyclomatic for KotlinCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        match node.kind() {
+            "if_expression" | "when_expression" | "for_statement" | "while_statement"
+            | "do_while_statement" | "try_expression" | "catch_block" => {
+                stats.cyclomatic += 1.;
+            }
+            "when_entry" => {
+                // Each case in a when expression adds to complexity
+                stats.cyclomatic += 1.;
+            }
+            "binary_expression" => {
+                // Handle && and || operators
+                if let Some(operator) = node.child_by_field_name("operator") {
+                    if matches!(operator.kind(), "&&" | "||") {
+                        stats.cyclomatic += 1.;
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+impl Cyclomatic for LuaCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        match node.kind() {
+            "if_statement" | "while_statement" | "repeat_statement" | "for_statement" => {
+                stats.cyclomatic += 1.;
+            }
+            "elseif_statement" => {
+                // Each elseif adds to complexity
+                stats.cyclomatic += 1.;
+            }
+            "binary_expression" => {
+                // Lua uses 'and'/'or' for boolean operators
+                if let Some(operator) = node.child_by_field_name("operator") {
+                    if matches!(operator.kind(), "and" | "or") {
+                        stats.cyclomatic += 1.;
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+impl Cyclomatic for GoCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        match node.kind() {
+            "if_statement"
+            | "for_statement"
+            | "switch_statement"
+            | "select_statement"
+            | "type_switch_statement" => {
+                stats.cyclomatic += 1.;
+            }
+            "expression_case" | "communication_case" | "default_case" => {
+                // Each case in switch/select adds to complexity
+                stats.cyclomatic += 1.;
+            }
+            "binary_expression" => {
+                // Handle && and || operators
+                if let Some(operator) = node.child_by_field_name("operator") {
+                    if matches!(operator.kind(), "&&" | "||") {
+                        stats.cyclomatic += 1.;
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+impl Cyclomatic for CsharpCode {
+    fn compute(node: &Node, stats: &mut Stats) {
+        match node.kind() {
+            "if_statement"
+            | "switch_statement"
+            | "for_statement"
+            | "foreach_statement"
+            | "while_statement"
+            | "do_statement"
+            | "try_statement"
+            | "catch_clause"
+            | "conditional_expression" => {
+                stats.cyclomatic += 1.;
+            }
+            "switch_section" | "switch_expression_arm" => {
+                // Each case in switch adds to complexity
+                stats.cyclomatic += 1.;
+            }
+            "binary_expression" => {
+                // Handle && and || operators
+                if let Some(operator) = node.child_by_field_name("operator") {
+                    if matches!(operator.kind(), "&&" | "||") {
+                        stats.cyclomatic += 1.;
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+implement_metric_trait!(Cyclomatic, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {
@@ -678,6 +775,613 @@ mod tests {
                       "min": 1.0,
                       "max": 2.0
                     }"###
+                );
+            },
+        );
+    }
+
+    // ==================== Kotlin Tests ====================
+
+    #[test]
+    fn kotlin_cyclomatic_simple_function() {
+        check_metrics::<KotlinParser>(
+            "fun greet() { // +2 (+1 unit space)
+                return \"Hello\"
+            }",
+            "foo.kt",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 1.0,
+                      "min": 1.0,
+                      "max": 1.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_cyclomatic_if_when() {
+        check_metrics::<KotlinParser>(
+            "fun check(x: Int): String { // +2 (+1 unit space)
+                if (x > 0) { // +1
+                    return \"positive\"
+                }
+                when (x) { // +1
+                    0 -> return \"zero\" // +1 (when_entry)
+                    else -> return \"negative\" // +1 (when_entry)
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 6.0,
+                  "average": 3.0,
+                  "min": 1.0,
+                  "max": 5.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_cyclomatic_loops_and_boolean() {
+        check_metrics::<KotlinParser>(
+            "fun process(items: List<Int>): Int { // +2 (+1 unit space)
+                var sum = 0
+                for (i in items) { // +1
+                    if (i > 0 && i < 100) { // +1 (if) +1 (&&)
+                        sum += i
+                    }
+                }
+                while (sum > 1000 || sum < 0) { // +1 (while) +1 (||)
+                    sum /= 2
+                }
+                return sum
+            }",
+            "foo.kt",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 7.0,
+                  "average": 3.5,
+                  "min": 1.0,
+                  "max": 6.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_cyclomatic_try_catch() {
+        check_metrics::<KotlinParser>(
+            "fun divide(a: Int, b: Int): Int { // +2 (+1 unit space)
+                try { // +1
+                    if (b == 0) { // +1
+                        throw IllegalArgumentException(\"Division by zero\")
+                    }
+                    return a / b
+                } catch (e: IllegalArgumentException) { // +1
+                    return -1
+                } catch (e: Exception) { // +1
+                    return -2
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 6.0,
+                  "average": 3.0,
+                  "min": 1.0,
+                  "max": 5.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn kotlin_cyclomatic_complex_when() {
+        check_metrics::<KotlinParser>(
+            "fun evaluate(score: Int): String { // +2 (+1 unit space)
+                return when { // +1
+                    score >= 90 && score <= 100 -> \"A\" // +1 (when_entry) +1 (&&)
+                    score >= 80 -> \"B\" // +1 (when_entry)
+                    score >= 70 -> \"C\" // +1 (when_entry)
+                    score >= 60 -> \"D\" // +1 (when_entry)
+                    else -> \"F\" // +1 (when_entry)
+                }
+            }",
+            "foo.kt",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 9.0,
+                  "average": 4.5,
+                  "min": 1.0,
+                  "max": 8.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    // ==================== Lua Tests ====================
+
+    #[test]
+    fn lua_cyclomatic_simple_function() {
+        check_metrics::<LuaParser>(
+            "function greet() -- +2 (+1 unit space)
+                return \"Hello\"
+            end",
+            "foo.lua",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 1.0,
+                      "min": 1.0,
+                      "max": 1.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_cyclomatic_if_elseif() {
+        check_metrics::<LuaParser>(
+            "function check(x) -- +2 (+1 unit space)
+                if x > 0 then -- +1
+                    return \"positive\"
+                elseif x < 0 then -- +1
+                    return \"negative\"
+                else
+                    return \"zero\"
+                end
+            end",
+            "foo.lua",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 4.0,
+                  "average": 2.0,
+                  "min": 1.0,
+                  "max": 3.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_cyclomatic_loops() {
+        check_metrics::<LuaParser>(
+            "function sum_array(arr) -- +2 (+1 unit space)
+                local sum = 0
+                for i = 1, #arr do -- +1
+                    sum = sum + arr[i]
+                end
+                while sum > 100 do -- +1
+                    sum = sum / 2
+                end
+                repeat -- +1
+                    sum = sum - 1
+                until sum <= 50
+                return sum
+            end",
+            "foo.lua",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 5.0,
+                  "average": 2.5,
+                  "min": 1.0,
+                  "max": 4.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_cyclomatic_boolean_operators() {
+        check_metrics::<LuaParser>(
+            "function validate(x, y) -- +2 (+1 unit space)
+                if x > 0 and y > 0 then -- +1 (if) +1 (and)
+                    return true
+                end
+                if x < 0 or y < 0 then -- +1 (if) +1 (or)
+                    return false
+                end
+                return nil
+            end",
+            "foo.lua",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 4.0,
+                  "average": 2.0,
+                  "min": 1.0,
+                  "max": 3.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn lua_cyclomatic_nested_loops() {
+        check_metrics::<LuaParser>(
+            "function matrix_sum(matrix) -- +2 (+1 unit space)
+                local total = 0
+                for i = 1, #matrix do -- +1
+                    for j = 1, #matrix[i] do -- +1
+                        if matrix[i][j] > 0 and matrix[i][j] < 100 then -- +1 (if) +1 (and)
+                            total = total + matrix[i][j]
+                        end
+                    end
+                end
+                return total
+            end",
+            "foo.lua",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 5.0,
+                  "average": 2.5,
+                  "min": 1.0,
+                  "max": 4.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    // ==================== Go Tests ====================
+
+    #[test]
+    fn go_cyclomatic_simple_function() {
+        check_metrics::<GoParser>(
+            "func greet() string { // +2 (+1 unit space)
+                return \"Hello\"
+            }",
+            "foo.go",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r###"
+                    {
+                      "sum": 2.0,
+                      "average": 1.0,
+                      "min": 1.0,
+                      "max": 1.0
+                    }"###
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_cyclomatic_if_and_for() {
+        check_metrics::<GoParser>(
+            "func sumPositive(nums []int) int { // +2 (+1 unit space)
+                sum := 0
+                for _, n := range nums { // +1
+                    if n > 0 { // +1
+                        sum += n
+                    }
+                }
+                return sum
+            }",
+            "foo.go",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 4.0,
+                  "average": 2.0,
+                  "min": 1.0,
+                  "max": 3.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_cyclomatic_switch_statement() {
+        check_metrics::<GoParser>(
+            "func classify(x int) string { // +2 (+1 unit space)
+                switch { // +1
+                case x > 0: // +1
+                    return \"positive\"
+                case x < 0: // +1
+                    return \"negative\"
+                default: // +1
+                    return \"zero\"
+                }
+            }",
+            "foo.go",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 5.0,
+                  "average": 2.5,
+                  "min": 1.0,
+                  "max": 4.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_cyclomatic_boolean_operators() {
+        check_metrics::<GoParser>(
+            "func validate(x, y int) bool { // +2 (+1 unit space)
+                if x > 0 && y > 0 { // +1 (if) +1 (&&)
+                    return true
+                }
+                if x < 0 || y < 0 { // +1 (if) +1 (||)
+                    return false
+                }
+                return x == y
+            }",
+            "foo.go",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 6.0,
+                  "average": 3.0,
+                  "min": 1.0,
+                  "max": 5.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn go_cyclomatic_select_statement() {
+        check_metrics::<GoParser>(
+            "func receiver(ch1, ch2 chan int) int { // +2 (+1 unit space)
+                select { // +1
+                case v := <-ch1: // +1
+                    if v > 0 { // +1
+                        return v
+                    }
+                case v := <-ch2: // +1
+                    return v * 2
+                default: // +1
+                    return 0
+                }
+            }",
+            "foo.go",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 7.0,
+                  "average": 3.5,
+                  "min": 1.0,
+                  "max": 6.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    // ==================== C# Tests ====================
+
+    #[test]
+    fn csharp_cyclomatic_simple_method() {
+        check_metrics::<CsharpParser>(
+            "public string Greet() { // +2 (+1 unit space)
+                return \"Hello\";
+            }",
+            "foo.cs",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 1.0,
+                  "average": 1.0,
+                  "min": 1.0,
+                  "max": 1.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_cyclomatic_if_and_ternary() {
+        check_metrics::<CsharpParser>(
+            "public int Check(int x) { // +2 (+1 unit space)
+                if (x > 0) { // +1
+                    return x;
+                }
+                return x < 0 ? -x : 0; // +1 (ternary)
+            }",
+            "foo.cs",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 3.0,
+                  "average": 3.0,
+                  "min": 3.0,
+                  "max": 3.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_cyclomatic_loops() {
+        check_metrics::<CsharpParser>(
+            "public int SumArray(int[] arr) { // +2 (+1 unit space)
+                int sum = 0;
+                for (int i = 0; i < arr.Length; i++) { // +1
+                    sum += arr[i];
+                }
+                while (sum > 100) { // +1
+                    sum /= 2;
+                }
+                foreach (var item in arr) { // +1
+                    if (item < 0) { // +1
+                        sum -= item;
+                    }
+                }
+                return sum;
+            }",
+            "foo.cs",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 5.0,
+                  "average": 5.0,
+                  "min": 5.0,
+                  "max": 5.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_cyclomatic_switch_statement() {
+        check_metrics::<CsharpParser>(
+            "public string Grade(int score) { // +2 (+1 unit space)
+                switch (score) { // +1
+                    case 90: // +1
+                    case 91: // +1
+                        return \"A\";
+                    case 80: // +1
+                        return \"B\";
+                    case 70: // +1
+                        return \"C\";
+                    default: // +1
+                        return \"F\";
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 7.0,
+                  "average": 7.0,
+                  "min": 7.0,
+                  "max": 7.0
+                }
+                "#
+                );
+            },
+        );
+    }
+
+    #[test]
+    fn csharp_cyclomatic_try_catch() {
+        check_metrics::<CsharpParser>(
+            "public int Divide(int a, int b) { // +2 (+1 unit space)
+                try { // +1
+                    if (b == 0) { // +1
+                        throw new ArgumentException(\"Division by zero\");
+                    }
+                    return a / b;
+                } catch (ArgumentException e) { // +1
+                    return -1;
+                } catch (Exception e) { // +1
+                    return -2;
+                }
+            }",
+            "foo.cs",
+            |metric| {
+                // nspace = 2 (func and unit)
+                insta::assert_json_snapshot!(
+                    metric.cyclomatic,
+                    @r#"
+                {
+                  "sum": 5.0,
+                  "average": 5.0,
+                  "min": 5.0,
+                  "max": 5.0
+                }
+                "#
                 );
             },
         );
