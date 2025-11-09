@@ -96,13 +96,20 @@ fn calculate(x: i32, y: i32) -> i32 {
 | **TSX (TypeScript + JSX)** | ✅ Full | ✅ Full | Covers the `LANG::Tsx` parser for mixed TS/JSX files. |
 | **Java** | ✅ Full | ✅ Full | Weighted Methods per Class (WMC) implemented only for Java. |
 | **C/C++** | ✅ Full | ✅ Full | See the macro parsing note below for known limitations. |
-| **Kotlin** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
-| **Go** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
-| **C#** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
-| **Elixir** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
-| **Erlang** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
-| **Gleam** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
-| **Lua** | ✅ Full | ⚠️ Partial | LOC, exit counting, and WMC metrics are not yet implemented. |
+| **Kotlin** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+| **Go** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+| **C#** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+| **Elixir** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+| **Erlang** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+| **Gleam** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+| **Lua** | ✅ Full | ⚠️ Partial | LOC and exit counting metrics not yet implemented. Cognitive complexity, cyclomatic complexity, and Halstead metrics are fully supported. |
+
+> [!NOTE]
+> ### Tree-sitter Integration
+> This library uses Tree-sitter 0.25.10 with the `kind_id()` method for efficient node type checking.
+> Language grammars are provided by their respective tree-sitter crates (e.g., `tree-sitter-rust`,
+> `tree-sitter-elixir`) and are automatically compiled when building the library. No separate
+> grammar files need to be shipped or maintained.
 
 > [!IMPORTANT]
 > ### Known C/C++ limitations
