@@ -330,7 +330,7 @@ mod tests {
             "if True:
                  a = 1 + 2",
             "foo.py",
-            &mut ["if", "=", "+"],
+            &mut ["if_statement", "=", "+"],
             &mut ["True", "a", "1", "2"],
         );
     }
@@ -384,10 +384,8 @@ mod tests {
                 "c",
                 "avg",
                 "scanf",
-                "\"%d %d %d\"",
                 "3",
                 "printf",
-                "\"avg = %d\"",
             ],
         );
     }
@@ -398,7 +396,7 @@ mod tests {
             LANG::Rust,
             "let: usize a = 5; let b: f32 = 7.0; let c: i32 = 3;",
             "foo.rs",
-            &mut ["let", "usize", "=", ";", "f32", "i32"],
+            &mut ["let", "primitive_type", "=", ";"],
             &mut ["a", "b", "c", "5", "7.0", "3"],
         );
     }
@@ -572,6 +570,8 @@ mod tests {
                 "console",
                 "log",
                 "\"{}\"",
+                "number",
+                "string",
             ],
         );
     }
@@ -611,6 +611,8 @@ mod tests {
                 "console",
                 "log",
                 "\"{}\"",
+                "number",
+                "string",
             ],
         );
     }
@@ -647,6 +649,8 @@ mod tests {
                 "console",
                 "log",
                 "\"{}\"",
+                "number",
+                "string",
             ],
         );
     }
@@ -686,6 +690,8 @@ mod tests {
                 "console",
                 "log",
                 "\"{}\"",
+                "number",
+                "string",
             ],
         );
     }

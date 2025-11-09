@@ -227,9 +227,20 @@ impl Getter for TypescriptCode {
             | "<=" | "==" | "!=" | ">=" | ">" | "+=" | "!" | "!==" | "===" | "-=" | "*="
             | "/=" | "%=" | "**=" | ">>=" | ">>>=" | "<<=" | "&=" | "^" | "^=" | "|="
             | "yield" | "[" | "{" | "await" | "?" | "??" | "new" | "let" | "var" | "const"
-            | "function" | "function_expression" | ";" => HalsteadType::Operator,
-            "identifier" | "nested_identifier" | "member_expression" | "property_identifier"
-            | "string" | "number" | "true" | "false" | "null" | "void" | "this" | "super"
+            | "function" | "function_expression" | ";" | "predefined_type" | "type_identifier" => HalsteadType::Operator,
+            "identifier" | "nested_identifier" | "member_expression" | "property_identifier" => {
+                // Check if this identifier is part of a type annotation
+                if let Some(parent) = node.parent() {
+                    match parent.kind() {
+                        "type_annotation" | "predefined_type" | "type_identifier" | "generic_type" | "type_arguments" => {
+                            return HalsteadType::Unknown;
+                        }
+                        _ => {}
+                    }
+                }
+                HalsteadType::Operand
+            }
+            "string" | "number" | "true" | "false" | "null" | "void" | "this" | "super"
             | "undefined" | "set" | "get" | "typeof" | "instanceof" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
@@ -290,9 +301,20 @@ impl Getter for TsxCode {
             | "<=" | "==" | "!=" | ">=" | ">" | "+=" | "!" | "!==" | "===" | "-=" | "*="
             | "/=" | "%=" | "**=" | ">>=" | ">>>=" | "<<=" | "&=" | "^" | "^=" | "|="
             | "yield" | "[" | "{" | "await" | "?" | "??" | "new" | "let" | "var" | "const"
-            | "function" | "function_expression" | ";" => HalsteadType::Operator,
-            "identifier" | "nested_identifier" | "member_expression" | "property_identifier"
-            | "string" | "number" | "true" | "false" | "null" | "void" | "this" | "super"
+            | "function" | "function_expression" | ";" | "predefined_type" | "type_identifier" => HalsteadType::Operator,
+            "identifier" | "nested_identifier" | "member_expression" | "property_identifier" => {
+                // Check if this identifier is part of a type annotation
+                if let Some(parent) = node.parent() {
+                    match parent.kind() {
+                        "type_annotation" | "predefined_type" | "type_identifier" | "generic_type" | "type_arguments" => {
+                            return HalsteadType::Unknown;
+                        }
+                        _ => {}
+                    }
+                }
+                HalsteadType::Operand
+            }
+            "string" | "number" | "true" | "false" | "null" | "void" | "this" | "super"
             | "undefined" | "set" | "get" | "typeof" | "instanceof" => HalsteadType::Operand,
             _ => HalsteadType::Unknown,
         }
