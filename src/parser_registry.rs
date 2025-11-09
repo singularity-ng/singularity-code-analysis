@@ -226,7 +226,8 @@ impl<
             LANG::Lua => vec!["lua"],
             LANG::Go => vec!["go"],
             LANG::Csharp => vec!["cs", "csx"],
-            // Kotlin, C not yet fully implemented
+            LANG::Kotlin => vec!["kt", "kts"],
+            // C not yet fully implemented
         }
     }
 

@@ -42,6 +42,8 @@ tree-sitter-lua = "0.2"
 # Go and C#
 tree-sitter-go = "0.23"
 tree-sitter-c-sharp = "0.23"
+# Kotlin
+tree-sitter-kotlin-ng = "1.1"
 num-traits = "0.2"
 
 # NIF support (optional - only when used from Elixir)

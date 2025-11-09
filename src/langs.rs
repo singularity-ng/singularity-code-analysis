@@ -48,17 +48,16 @@ mk_langs!(
         [java],
         ["java"]
     ),
-    // Kotlin temporarily disabled - different tree-sitter interface (uses language() function instead of LANGUAGE)
-    // (
-    //     Kotlin,
-    //     "The `Kotlin` language",
-    //     "kotlin",
-    //     KotlinCode,
-    //     KotlinParser,
-    //     tree_sitter_kotlin,
-    //     [kt, kts],
-    //     ["kotlin"]
-    // ),
+    (
+        Kotlin,
+        "The `Kotlin` language",
+        "kotlin",
+        KotlinCode,
+        KotlinParser,
+        tree_sitter_kotlin_ng,
+        [kt, kts],
+        ["kotlin"]
+    ),
     (
         Rust,
         "The `Rust` language",
@@ -181,13 +180,11 @@ mk_langs!(
 pub struct MozjsCode;
 pub struct PreprocCode;
 pub struct CcommentCode;
-pub struct KotlinCode;
 
 // Compatibility parser types - delegate to standard parsers
 pub type MozjsParser = JavascriptParser;
 pub type PreprocParser = CppParser;
 pub type CcommentParser = CppParser;
-pub type KotlinParser = JavaParser; // Use Java parser as fallback for Kotlin
 
 pub(crate) mod fake {
     pub(crate) fn get_true<'a>(ext: &str, mode: &str) -> Option<&'a str> {

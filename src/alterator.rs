@@ -202,3 +202,5 @@ impl Alterator for LuaCode {
 impl Alterator for GoCode {}
 
 impl Alterator for CsharpCode {}
+
+impl Alterator for KotlinCode {}
