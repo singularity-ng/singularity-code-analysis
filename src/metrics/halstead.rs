@@ -936,13 +936,10 @@ mod tests {
 
     #[test]
     fn lua_halstead_moderate() {
-        check_metrics::<LuaParser>(
-            "function add(a, b) return a + b end",
-            "foo.lua",
-            |metric| {
-                insta::assert_json_snapshot!(
-                    metric.halstead,
-                    @r#"
+        check_metrics::<LuaParser>("function add(a, b) return a + b end", "foo.lua", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
                 {
                   "n1": 6.0,
                   "N1": 6.0,
@@ -960,9 +957,8 @@ mod tests {
                   "bugs": 0.010402870600353142
                 }
                 "#
-                );
-            },
-        );
+            );
+        });
     }
 
     #[test]
@@ -1404,13 +1400,10 @@ mod tests {
 
     #[test]
     fn elixir_halstead_moderate() {
-        check_metrics::<ElixirParser>(
-            "def add(a, b) do a + b end",
-            "foo.ex",
-            |metric| {
-                insta::assert_json_snapshot!(
-                    metric.halstead,
-                    @r#"
+        check_metrics::<ElixirParser>("def add(a, b) do a + b end", "foo.ex", |metric| {
+            insta::assert_json_snapshot!(
+                metric.halstead,
+                @r#"
                 {
                   "n1": 5.0,
                   "N1": 7.0,
@@ -1428,9 +1421,8 @@ mod tests {
                   "bugs": 0.009599040339100903
                 }
                 "#
-                );
-            },
-        );
+            );
+        });
     }
 
     #[test]
