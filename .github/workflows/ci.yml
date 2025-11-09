@@ -9,10 +9,16 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+# Restrict permissions to minimum required
+permissions:
+  contents: read
+
 jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -23,6 +29,8 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -33,6 +41,8 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -44,6 +54,8 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -56,6 +68,8 @@ jobs:
   build:
     name: Build Release
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
