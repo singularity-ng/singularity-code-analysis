@@ -496,7 +496,7 @@ impl Checker for TypescriptCode {
 
 impl Checker for TsxCode {
     fn is_comment(node: &Node) -> bool {
-        node.kind_id() == Tsx::Comment
+        node.kind() == "comment"
     }
 
     fn is_useful_comment(_: &Node, _: &[u8]) -> bool {
@@ -505,43 +505,40 @@ impl Checker for TsxCode {
 
     fn is_func_space(node: &Node) -> bool {
         matches!(
-            node.kind_id().into(),
-            Tsx::Program
-                | Tsx::FunctionExpression
-                | Tsx::Class
-                | Tsx::GeneratorFunction
-                | Tsx::FunctionDeclaration
-                | Tsx::MethodDefinition
-                | Tsx::GeneratorFunctionDeclaration
-                | Tsx::ClassDeclaration
-                | Tsx::InterfaceDeclaration
-                | Tsx::ArrowFunction
+            node.kind(),
+            "program"
+                | "function_expression"
+                | "class"
+                | "generator_function"
+                | "function_declaration"
+                | "method_definition"
+                | "generator_function_declaration"
+                | "class_declaration"
+                | "interface_declaration"
+                | "arrow_function"
         )
     }
 
     is_js_func_and_closure_checker!(TsxParser, Tsx);
 
     fn is_call(node: &Node) -> bool {
-        node.kind_id() == Tsx::CallExpression
+        node.kind() == "call_expression"
     }
 
     fn is_non_arg(node: &Node) -> bool {
-        matches!(
-            node.kind_id().into(),
-            Tsx::LPAREN | Tsx::COMMA | Tsx::RPAREN
-        )
+        matches!(node.kind(), "(" | "," | ")")
     }
 
     fn is_string(node: &Node) -> bool {
-        node.kind_id() == Tsx::String || node.kind_id() == Tsx::TemplateString
+        node.kind() == "string" || node.kind() == "template_string"
     }
 
     fn is_else_if(node: &Node) -> bool {
-        if node.kind_id() != Tsx::IfStatement {
+        if node.kind() != "if_statement" {
             return false;
         }
         if let Some(parent) = node.parent() {
-            return node.kind_id() == Tsx::IfStatement && parent.kind_id() == Tsx::IfStatement;
+            return node.kind() == "if_statement" && parent.kind() == "if_statement";
         }
         false
     }
