@@ -240,7 +240,9 @@ This fork includes special enhancements for BEAM languages:
 
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+Quick start:
 
 1. Fork the repository
 2. Create a feature branch
@@ -252,23 +254,29 @@ Contributions are welcome! Please:
 
 ```bash
 # Clone the repository
-git clone https://github.com/mikkhugo/singularity-incubation.git
-cd singularity-incubation/packages/singularity-analysis
+git clone https://github.com/Singularity-ng/singularity-analysis.git
+cd singularity-analysis
 
 # Run tests
-cargo test
-
-# Run benchmarks
-cargo bench
+cargo test --lib
 
 # Check code quality
-cargo clippy
+cargo clippy --lib
 cargo fmt --check
 ```
 
+## Documentation
+
+- **[Quick Start Guide](docs/QUICK_START.md)**: Get started quickly
+- **[Quick Reference](docs/QUICK_REFERENCE.md)**: API quick reference
+- **[BEAM Support](docs/BEAM_SUPPORT.md)**: Elixir, Erlang, Gleam support details
+- **[Known Issues](docs/KNOWN_TEST_ISSUES.md)**: Current test status and known limitations
+- **[Contributing Guide](CONTRIBUTING.md)**: How to contribute
+- **[Security Policy](SECURITY.md)**: Security reporting and policies
+
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is dual-licensed under MIT OR Apache-2.0 - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 

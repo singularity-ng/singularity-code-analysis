@@ -243,9 +243,7 @@ impl Exit for LuaCode {
 
 impl Exit for GoCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        if node.kind() == "return_statement" {
-            stats.exit += 1;
-        } else if call_matches_any(node, &["panic"]) {
+        if node.kind() == "return_statement" || call_matches_any(node, &["panic"]) {
             stats.exit += 1;
         }
     }

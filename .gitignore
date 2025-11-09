@@ -20,7 +20,10 @@ Cargo.lock
 # Test artifacts
 .insta-pending/
 *.pending-snap
+*.rssnap
 insta-reviews/
+test_output.txt
+debug_test.rs
 
 # Debug
 debug/
