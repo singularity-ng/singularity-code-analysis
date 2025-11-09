@@ -688,13 +688,10 @@ mod tests {
 
     #[test]
     fn lua_exit_single_return() {
-        check_metrics::<LuaParser>(
-            "function add(a, b) return a + b end",
-            "foo.lua",
-            |metric| {
-                insta::assert_json_snapshot!(
-                    metric.nexits,
-                    @r#"
+        check_metrics::<LuaParser>("function add(a, b) return a + b end", "foo.lua", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nexits,
+                @r#"
                 {
                   "sum": 0.0,
                   "average": 0.0,
@@ -702,9 +699,8 @@ mod tests {
                   "max": 0.0
                 }
                 "#
-                );
-            },
-        );
+            );
+        });
     }
 
     #[test]
@@ -1029,22 +1025,18 @@ mod tests {
 
     #[test]
     fn csharp_exit_expression_body() {
-        check_metrics::<CsharpParser>(
-            "int Square(int x) => x * x;",
-            "foo.cs",
-            |metric| {
-                insta::assert_json_snapshot!(
-                    metric.nexits,
-                    @r###"
+        check_metrics::<CsharpParser>("int Square(int x) => x * x;", "foo.cs", |metric| {
+            insta::assert_json_snapshot!(
+                metric.nexits,
+                @r###"
                     {
                       "sum": 0.0,
                       "average": null,
                       "min": 0.0,
                       "max": 0.0
                     }"###
-                );
-            },
-        );
+            );
+        });
     }
 
     #[test]
