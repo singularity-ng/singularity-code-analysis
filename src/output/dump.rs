@@ -17,7 +17,7 @@ use crate::{
 /// ```
 /// use std::path::PathBuf;
 ///
-/// use rust_code_analysis::{dump_node, CppParser, ParserTrait};
+/// use singularity_code_analysis::{dump_node, CppParser, ParserTrait};
 ///
 /// let source_code = "int a = 42;";
 ///

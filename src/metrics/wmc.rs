@@ -7,10 +7,10 @@ use serde::{
 
 use crate::{checker::Checker, macros::implement_metric_trait, *};
 
-// FIX ME: New Java switches are not correctly recognised by tree-sitter-java version 0.19.0
-// However, the issue has already been addressed and resolved upstream on the tree-sitter-java GitHub repository
-// Upstream issue: https://github.com/tree-sitter/tree-sitter-java/issues/69
-// Upstream PR which resolves the issue: https://github.com/tree-sitter/tree-sitter-java/pull/78
+// Historical note: tree-sitter-java 0.19.0 failed to recognise modern `switch` constructs
+// (https://github.com/tree-sitter/tree-sitter-java/issues/69). The fix landed upstream in
+// https://github.com/tree-sitter/tree-sitter-java/pull/78 and is bundled with the 0.23.5
+// grammar that this crate now depends on.
 
 /// The `Wmc` metric.
 ///

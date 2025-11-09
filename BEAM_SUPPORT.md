@@ -195,7 +195,7 @@ Making singularity-code-analysis one of the most comprehensive BEAM-aware comple
 ## Credits
 
 Implementation based on:
-- Singularity's rust-code-analysis framework
+- Singularity's singularity-code-analysis framework
 - tree-sitter-elixir by @elixir-lang
 - tree-sitter-erlang by @WhatsApp
 - tree-sitter-gleam by @gleam-lang

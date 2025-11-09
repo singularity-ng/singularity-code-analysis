@@ -1,13 +1,13 @@
 # Update grammars
 
 Each programming language needs to be parsed in order to extract its syntax and semantic: the so-called grammar of a language.
-In `rust-code-analysis`, we use [tree-sitter](https://github.com/tree-sitter) as parsing library since it provides a set of distinct grammars for each of our
+In `singularity-code-analysis`, we use [tree-sitter](https://github.com/tree-sitter) as parsing library since it provides a set of distinct grammars for each of our
 supported programming languages. But a grammar is not a static monolith, it changes over time, and it can also be affected by bugs,
 hence it is necessary to update it every now and then.
 
 As now, since we have used `bash` scripts to automate the operations, grammars can be updated natively **only** on `Linux` and `MacOS` systems, but these scripts can also run on `Windows` using `WSL`.
 
-In `rust-code-analysis` we use both **third-party** and **internal** grammars.
+In `singularity-code-analysis` we use both **third-party** and **internal** grammars.
 The first ones are published on `crates.io` and maintained by external developers,
 while the second ones have been thought and defined inside the project to manage variant of some languages
 used in `Firefox`.

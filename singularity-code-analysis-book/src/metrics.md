@@ -1,6 +1,6 @@
 # Supported Metrics
 
-**rust-code-analysis** implements a series of metrics:
+**singularity-code-analysis** implements a series of metrics:
 
 - **ABC**: it measures the size of a source code by counting the number of
 Assignments (`A`), Branches (`B`) and Conditions (`C`).

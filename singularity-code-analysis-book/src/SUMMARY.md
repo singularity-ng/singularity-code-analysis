@@ -1,6 +1,6 @@
 # Summary
 
-- [rust-code-analysis](./README.md)
+- [singularity-code-analysis](./README.md)
     - [Supported Languages](./languages.md)
     - [Supported Metrics](./metrics.md)
 - [Commands](commands/README.md)

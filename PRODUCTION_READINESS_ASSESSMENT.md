@@ -446,7 +446,7 @@ Grep results for common patterns:
 | regex | 1.12 | ✅ Current | Widely used, well-maintained |
 | serde | 1.0 | ✅ Current | Standard serialization |
 | walkdir | 2.5 | ✅ Current | File traversal |
-| petgraph | 0.6 | ✅ Current | Graph algorithms |
+| petgraph | 0.8 | ✅ Current | Graph algorithms |
 | crossbeam | 0.8 | ✅ Current | Concurrency primitives |
 | tree-sitter-* | 0.2-1.1 | ✅ Current | Grammar parsers |
 | aho-corasick | 1.1 | ✅ Current | String matching |

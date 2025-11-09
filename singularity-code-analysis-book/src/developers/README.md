@@ -1,6 +1,6 @@
 # Developers Guide
 
-If you want to contribute to the development of `rust-code-analysis` we have
+If you want to contribute to the development of `singularity-code-analysis` we have
 summarized here a series of guidelines that are supposed to help you in your
 building process.
 
@@ -16,18 +16,18 @@ You can do that:
 through **HTTPS**
 
 ```
-git clone -j8 https://github.com/singularity/rust-code-analysis.git
+git clone -j8 https://github.com/mikkihugo/singularity-code-analysis.git
 ```
 
 or through **SSH**
 
 ```
-git clone -j8 git@github.com:singularity/rust-code-analysis.git
+git clone -j8 git@github.com:mikkihugo/singularity-code-analysis.git
 ```
 
 ## Building
 
-To build the `rust-code-analysis` library, you need to run the following
+To build the `singularity-code-analysis` library, you need to run the following
 command:
 
 ```console
@@ -37,13 +37,13 @@ cargo build
 If you want to build the `cli`:
 
 ```console
-cargo build -p rust-code-analysis-cli
+cargo build -p singularity-code-analysis-cli
 ```
 
 If you want to build the `web` server:
 
 ```console
-cargo build -p rust-code-analysis-web
+cargo build -p singularity-code-analysis-web
 ```
 
 If you want to build everything in one fell swoop:
@@ -111,32 +111,32 @@ cargo doc --open --no-deps
 ```
 
 Remove the `--no-deps` option if you also want to build the documentation of
-each dependency used by **rust-code-analysis**.
+each dependency used by **singularity-code-analysis**.
 
 ## Run your code
 
-You can run **rust-code-analysis-cli** using:
+You can run **singularity-code-analysis-cli** using:
 
 ```console
-cargo run -p rust-code-analysis-cli -- [rust-code-analysis-cli-parameters]
+cargo run -p singularity-code-analysis-cli -- [singularity-code-analysis-cli-parameters]
 ```
 
-To know the list of **rust-code-analysis-cli** parameters, run:
+To know the list of **singularity-code-analysis-cli** parameters, run:
 
 ```console
-cargo run -p rust-code-analysis-cli -- --help
+cargo run -p singularity-code-analysis-cli -- --help
 ```
 
-You can run **rust-code-analysis-web** using:
+You can run **singularity-code-analysis-web** using:
 
 ```console
-cargo run -p rust-code-analysis-web -- [rust-code-analysis-web-parameters]
+cargo run -p singularity-code-analysis-web -- [singularity-code-analysis-web-parameters]
 ```
 
-To know the list of **rust-code-analysis-web** parameters, run:
+To know the list of **singularity-code-analysis-web** parameters, run:
 
 ```console
-cargo run -p rust-code-analysis-web -- --help
+cargo run -p singularity-code-analysis-web -- --help
 ```
 
 ## Practical advice
