@@ -17,6 +17,8 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/rust:1-bullseye
     permissions:
       contents: read
     steps:
@@ -29,6 +31,8 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/rust:1-bullseye
     permissions:
       contents: read
     steps:
@@ -41,6 +45,8 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/rust:1-bullseye
     permissions:
       contents: read
     steps:
@@ -54,6 +60,8 @@ jobs:
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/rust:1-bullseye
     permissions:
       contents: read
     steps:
@@ -68,6 +76,8 @@ jobs:
   build:
     name: Build Release
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/devcontainers/rust:1-bullseye
     permissions:
       contents: read
     steps:

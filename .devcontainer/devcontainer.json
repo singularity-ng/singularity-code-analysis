@@ -1,0 +1,39 @@
+{
+  "name": "Singularity Analysis Dev",
+  "image": "mcr.microsoft.com/devcontainers/rust:1-bullseye",
+  "remoteUser": "vscode",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+  "mounts": [
+    "source=${localEnv:HOME}/.cargo/git,target=/home/vscode/.cargo/git,type=bind,readonly"
+  ],
+  "containerEnv": {
+    "CARGO_TARGET_DIR": "/workspaces/.cargo-target"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "rust-analyzer.linkedProjects": [
+          "Cargo.toml"
+        ],
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "serayuzgur.crates",
+        "ms-vscode-remote.remote-containers"
+      ]
+    }
+  },
+  "postCreateCommand": "rustup component add rustfmt clippy && cargo fetch",
+  "runArgs": [
+    "--init"
+  ],
+  "workspaceFolder": "/workspaces/singularity-code-analysis",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/singularity-code-analysis,type=bind,consistency=cached"
+}
