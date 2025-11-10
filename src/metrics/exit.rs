@@ -5,7 +5,11 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, macros::implement_metric_trait, *};
+use crate::{
+    analysis_context, checker::Checker, macros::implement_metric_trait, node::Node, CcommentCode,
+    CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode, JavaCode, JavascriptCode,
+    KotlinCode, LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode, TsxCode, TypescriptCode,
+};
 
 /// The `NExit` metric.
 ///
@@ -15,7 +19,7 @@ use crate::{checker::Checker, macros::implement_metric_trait, *};
 pub struct Stats {
     exit: usize,
     exit_sum: usize,
-    total_space_functions: usize,
+    total_space_functions: f64,
     exit_min: usize,
     exit_max: usize,
 }
@@ -25,7 +29,7 @@ impl Default for Stats {
         Self {
             exit: 0,
             exit_sum: 0,
-            total_space_functions: 1,
+            total_space_functions: 1.0,
             exit_min: usize::MAX,
             exit_max: 0,
         }
@@ -60,6 +64,14 @@ impl fmt::Display for Stats {
 }
 
 impl Stats {
+    #[inline]
+    const fn usize_to_f64(value: usize) -> f64 {
+        #[allow(clippy::cast_precision_loss)]
+        {
+            value as f64
+        }
+    }
+
     /// Merges a second `NExit` metric into the first one
     pub fn merge(&mut self, other: &Stats) {
         self.exit_max = self.exit_max.max(other.exit_max);
@@ -68,20 +80,24 @@ impl Stats {
     }
 
     /// Returns the `NExit` metric value
+    #[must_use]
     pub fn exit(&self) -> f64 {
-        self.exit as f64
+        Self::usize_to_f64(self.exit)
     }
     /// Returns the `NExit` metric sum value
+    #[must_use]
     pub fn exit_sum(&self) -> f64 {
-        self.exit_sum as f64
+        Self::usize_to_f64(self.exit_sum)
     }
     /// Returns the `NExit` metric  minimum value
+    #[must_use]
     pub fn exit_min(&self) -> f64 {
-        self.exit_min as f64
+        Self::usize_to_f64(self.exit_min)
     }
     /// Returns the `NExit` metric maximum value
+    #[must_use]
     pub fn exit_max(&self) -> f64 {
-        self.exit_max as f64
+        Self::usize_to_f64(self.exit_max)
     }
 
     /// Returns the `NExit` metric average value
@@ -90,8 +106,9 @@ impl Stats {
     /// for the total number of functions/closures in a space.
     ///
     /// If there are no functions in a code, its value is `NAN`.
+    #[must_use]
     pub fn exit_average(&self) -> f64 {
-        self.exit_sum() / self.total_space_functions as f64
+        self.exit_sum() / self.total_space_functions
     }
     #[inline]
     pub(crate) fn compute_sum(&mut self) {
@@ -104,7 +121,10 @@ impl Stats {
         self.compute_sum();
     }
     pub(crate) fn finalize(&mut self, total_space_functions: usize) {
-        self.total_space_functions = total_space_functions;
+        #[allow(clippy::cast_precision_loss)]
+        {
+            self.total_space_functions = total_space_functions as f64;
+        }
     }
 }
 
@@ -280,8 +300,11 @@ implement_metric_trait!(Exit, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{
+        tools::check_metrics, CppParser, CsharpParser, ElixirParser, ErlangParser, GleamParser,
+        GoParser, JavaParser, JavascriptParser, KotlinParser, LuaParser, ParserEngineRust,
+        PythonParser, TypescriptParser,
+    };
 
     #[test]
     fn python_no_exit() {

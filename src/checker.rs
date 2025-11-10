@@ -686,8 +686,9 @@ impl Checker for ElixirCode {
         // Check if first child is identifier matching a function-defining keyword
         node.child(0)
             .filter(|child| child.kind() == "identifier")
-            .map(|child| node_text_equals_any(&child, &["def", "defp", "defmacro", "defmacrop"]))
-            .unwrap_or(false)
+            .is_some_and(|child| {
+                node_text_equals_any(&child, &["def", "defp", "defmacro", "defmacrop"])
+            })
     }
 
     fn is_closure(node: &Node) -> bool {
@@ -713,10 +714,10 @@ impl Checker for ElixirCode {
         false
     }
 
-    fn is_primitive(_id: u16) -> bool {
+    fn is_primitive(kind_id: u16) -> bool {
         // Elixir primitives: atoms, integers, floats, booleans, nil
         matches!(
-            _id.into(),
+            kind_id.into(),
             Elixir::Atom | Elixir::Integer | Elixir::Float | Elixir::Boolean | Elixir::Nil
         )
     }
@@ -772,9 +773,12 @@ impl Checker for ErlangCode {
         false
     }
 
-    fn is_primitive(_id: u16) -> bool {
+    fn is_primitive(kind_id: u16) -> bool {
         // Erlang primitives: atoms, integers, floats, vars
-        matches!(_id.into(), Erlang::Atom | Erlang::Integer | Erlang::Float)
+        matches!(
+            kind_id.into(),
+            Erlang::Atom | Erlang::Integer | Erlang::Float
+        )
     }
 }
 
@@ -829,9 +833,9 @@ impl Checker for GleamCode {
         false
     }
 
-    fn is_primitive(_id: u16) -> bool {
+    fn is_primitive(kind_id: u16) -> bool {
         // Gleam primitives: integers, floats
-        matches!(_id.into(), Gleam::Integer | Gleam::Float)
+        matches!(kind_id.into(), Gleam::Integer | Gleam::Float)
     }
 }
 
@@ -881,10 +885,10 @@ impl Checker for LuaCode {
         false
     }
 
-    fn is_primitive(_id: u16) -> bool {
+    fn is_primitive(kind_id: u16) -> bool {
         // Lua primitives: numbers, strings, booleans, nil
         matches!(
-            _id.into(),
+            kind_id.into(),
             Lua::Number | Lua::String | Lua::True | Lua::False | Lua::Nil
         )
     }

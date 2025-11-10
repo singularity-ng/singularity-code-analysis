@@ -5,7 +5,11 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, getter::Getter, *};
+use crate::{
+    checker::Checker, getter::Getter, node::Node, CcommentCode, CppCode, CsharpCode, ElixirCode,
+    ErlangCode, GleamCode, GoCode, JavaCode, JavascriptCode, KotlinCode, LuaCode, MozjsCode,
+    PreprocCode, PythonCode, RustCode, TsxCode, TypescriptCode,
+};
 
 /// The `Halstead` metric suite.
 #[derive(Default, Clone, Debug)]
@@ -41,10 +45,10 @@ impl<'a> HalsteadMaps<'a> {
     }
 
     pub(crate) fn merge(&mut self, other: &HalsteadMaps<'a>) {
-        for (k, v) in other.operators.iter() {
+        for (k, v) in &other.operators {
             *self.operators.entry(*k).or_insert(0) += v;
         }
-        for (k, v) in other.operands.iter() {
+        for (k, v) in &other.operands {
             *self.operands.entry(*k).or_insert(0) += v;
         }
     }
@@ -118,40 +122,55 @@ impl fmt::Display for Stats {
 }
 
 impl Stats {
+    #[inline]
+    const fn u64_to_f64(value: u64) -> f64 {
+        #[allow(clippy::cast_precision_loss)]
+        {
+            value as f64
+        }
+    }
+
+    #[allow(clippy::unused_self)]
     pub(crate) fn merge(&self, _other: &Stats) {}
 
     /// Returns `η1`, the number of distinct operators
     #[inline]
+    #[must_use]
     pub fn u_operators(&self) -> f64 {
-        self.u_operators as f64
+        Self::u64_to_f64(self.u_operators)
     }
 
     /// Returns `N1`, the number of total operators
     #[inline]
+    #[must_use]
     pub fn operators(&self) -> f64 {
-        self.operators as f64
+        Self::u64_to_f64(self.operators)
     }
 
     /// Returns `η2`, the number of distinct operands
     #[inline]
+    #[must_use]
     pub fn u_operands(&self) -> f64 {
-        self.u_operands as f64
+        Self::u64_to_f64(self.u_operands)
     }
 
     /// Returns `N2`, the number of total operands
     #[inline]
+    #[must_use]
     pub fn operands(&self) -> f64 {
-        self.operands as f64
+        Self::u64_to_f64(self.operands)
     }
 
     /// Returns the program length
     #[inline]
+    #[must_use]
     pub fn length(&self) -> f64 {
         self.operands() + self.operators()
     }
 
     /// Returns the calculated estimated program length
     #[inline]
+    #[must_use]
     pub fn estimated_program_length(&self) -> f64 {
         self.u_operators() * self.u_operators().log2()
             + self.u_operands() * self.u_operands().log2()
@@ -159,12 +178,14 @@ impl Stats {
 
     /// Returns the purity ratio
     #[inline]
+    #[must_use]
     pub fn purity_ratio(&self) -> f64 {
         self.estimated_program_length() / self.length()
     }
 
     /// Returns the program vocabulary
     #[inline]
+    #[must_use]
     pub fn vocabulary(&self) -> f64 {
         self.u_operands() + self.u_operators()
     }
@@ -173,6 +194,7 @@ impl Stats {
     ///
     /// Unit of measurement: bits
     #[inline]
+    #[must_use]
     pub fn volume(&self) -> f64 {
         // Assumes a uniform binary encoding for the vocabulary is used.
         self.length() * self.vocabulary().log2()
@@ -180,18 +202,21 @@ impl Stats {
 
     /// Returns the estimated difficulty required to program
     #[inline]
+    #[must_use]
     pub fn difficulty(&self) -> f64 {
         self.u_operators() / 2. * self.operands() / self.u_operands()
     }
 
     /// Returns the estimated level of difficulty required to program
     #[inline]
+    #[must_use]
     pub fn level(&self) -> f64 {
         1. / self.difficulty()
     }
 
     /// Returns the estimated effort required to program
     #[inline]
+    #[must_use]
     pub fn effort(&self) -> f64 {
         self.difficulty() * self.volume()
     }
@@ -200,6 +225,7 @@ impl Stats {
     ///
     /// Unit of measurement: seconds
     #[inline]
+    #[must_use]
     pub fn time(&self) -> f64 {
         // The floating point `18.` aims to describe the processing rate of the
         // human brain. It is called Stoud number, S, and its
@@ -220,6 +246,7 @@ impl Stats {
     /// This metric represents the average amount of work a programmer can do
     /// without introducing an error.
     #[inline]
+    #[must_use]
     pub fn bugs(&self) -> f64 {
         // The floating point `3000.` represents the number of elementary
         // mental discriminations.
@@ -273,7 +300,7 @@ fn compute_halstead<'a, T: Getter>(
                 .entry(get_id(node, code))
                 .or_insert(0) += 1;
         }
-        _ => {}
+        HalsteadType::Unknown => {}
     }
 }
 
@@ -381,8 +408,11 @@ impl Halstead for CsharpCode {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{
+        tools::check_metrics, CppParser, CsharpParser, ElixirParser, GleamParser, GoParser,
+        JavaParser, JavascriptParser, KotlinParser, LuaParser, MozjsParser, ParserEngineRust,
+        PythonParser, TsxParser, TypescriptParser,
+    };
 
     #[test]
     fn python_operators_and_operands() {

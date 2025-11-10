@@ -9,7 +9,8 @@ use petgraph::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    c_langs_macros::is_specials, langs::*, languages::language_preproc::*, tools::*, traits::*,
+    c_langs_macros::is_specials, langs::PreprocParser, languages::language_preproc::Preproc,
+    tools::guess_file, traits::ParserTrait,
 };
 
 /// Preprocessor data of a `C/C++` file.
@@ -33,6 +34,7 @@ pub struct PreprocResults {
 
 impl PreprocFile {
     /// Adds new macros to the set of macro of a file.
+    #[must_use]
     pub fn new_macros(macros: &[&str]) -> Self {
         let mut pf = Self::default();
         for m in macros {
@@ -49,13 +51,13 @@ pub fn get_macros<S: ::std::hash::BuildHasher>(
 ) -> HashSet<String> {
     let mut macros = HashSet::new();
     if let Some(pf) = files.get(file) {
-        for m in pf.macros.iter() {
-            macros.insert(m.to_string());
+        for macro_name in &pf.macros {
+            macros.insert(macro_name.clone());
         }
-        for f in pf.indirect_includes.iter() {
-            if let Some(pf) = files.get(&PathBuf::from(f)) {
-                for m in pf.macros.iter() {
-                    macros.insert(m.to_string());
+        for include in &pf.indirect_includes {
+            if let Some(pf) = files.get(Path::new(include)) {
+                for macro_name in &pf.macros {
+                    macros.insert(macro_name.clone());
                 }
             }
         }
@@ -68,6 +70,11 @@ pub fn get_macros<S: ::std::hash::BuildHasher>(
 ///
 /// The dependency graph is built using both preprocessor data and not
 /// extracted from the considered `C/C++` files.
+///
+/// # Panics
+///
+/// Panics if removing nodes from the dependency graph fails, which would indicate
+/// an invalid graph structure (should not happen under normal operation).
 pub fn fix_includes<S: ::std::hash::BuildHasher>(
     files: &mut HashMap<PathBuf, PreprocFile, S>,
     all_files: &HashMap<String, Vec<PathBuf>, S>,
@@ -87,15 +94,15 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
         for i in direct_includes {
             let possibilities = guess_file(file, i, all_files);
             for i in possibilities {
-                if &i != file {
+                if &i == file {
+                    // TODO: add an option to display warning
+                    eprintln!("Warning: possible self inclusion {}", file.display());
+                } else {
                     let i = match nodes.entry(i.clone()) {
                         hash_map::Entry::Occupied(l) => *l.get(),
                         hash_map::Entry::Vacant(p) => *p.insert(g.add_node(i)),
                     };
                     g.add_edge(node, i, 0);
-                } else {
-                    // TODO: add an option to display warning
-                    eprintln!("Warning: possible self inclusion {file:?}");
                 }
             }
         }
@@ -107,7 +114,7 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
     // all the files in the scc.
     let mut scc = kosaraju_scc(&g);
     let mut scc_map: HashMap<NodeIndex, HashSet<String>> = HashMap::new();
-    for component in scc.iter_mut() {
+    for component in &mut scc {
         if component.len() > 1 {
             // For Firefox, there are only few scc and all of them are pretty small
             // So no need to take a hammer here (for 'contains' stuff).
@@ -136,7 +143,7 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
             for o in outgoing {
                 g.add_edge(replacement, o, 0);
             }
-            let component_nodes: Vec<_> = component.to_vec();
+            let component_nodes = component.clone();
             for c in component_nodes {
                 let path = g.remove_node(c).unwrap();
                 paths.insert(path.to_str().unwrap().to_string());
@@ -144,8 +151,8 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
             }
 
             eprintln!("Warning: possible include cycle:");
-            for p in paths.iter() {
-                eprintln!("  - {p:?}");
+            for p in &paths {
+                eprintln!("  - {p}");
             }
             eprintln!();
 
@@ -163,10 +170,10 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
                     let paths = scc_map.get(&node);
                     if let Some(paths) = paths {
                         for p in paths {
-                            x_inc.insert(p.to_string());
+                            x_inc.insert(p.clone());
                         }
                     } else {
-                        eprintln!("DEBUG: {path:?} {node:?}");
+                        eprintln!("DEBUG: {} {node:?}", path.display());
                     }
                 } else {
                     x_inc.insert(w.to_str().unwrap().to_string());
@@ -174,8 +181,8 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
             }
         } else {
             eprintln!(
-                "Warning: included file which has not been preprocessed: {:?}",
-                path
+                "Warning: included file which has not been preprocessed: {}",
+                path.display()
             );
         }
     }
@@ -184,6 +191,10 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
 /// Extracts preprocessor data from a `C/C++` file
 /// and inserts these data in a [`PreprocResults`] object.
 ///
+/// # Panics
+///
+/// Panics if tree-sitter returns invalid UTF-8 for macro identifiers, which
+/// would indicate a malformed parse tree.
 ///
 /// [`PreprocResults`]: struct.PreprocResults.html
 pub fn preprocess(parser: &PreprocParser, path: &Path, results: &mut PreprocResults) {

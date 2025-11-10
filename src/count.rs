@@ -7,7 +7,15 @@ use std::{
 
 use num_format::{Locale, ToFormattedString};
 
-use crate::traits::*;
+use crate::traits::{Callback, ParserTrait};
+
+#[inline]
+fn usize_to_f64(value: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f64
+    }
+}
 
 /// Counts the types of nodes specified in the input slice
 /// and the number of nodes in a code.
@@ -83,10 +91,11 @@ impl fmt::Display for Count {
             "Found nodes: {}",
             self.good.to_formatted_string(&Locale::en)
         )?;
-        write!(
-            f,
-            "Percentage: {:.2}%",
-            (self.good as f64) / (self.total as f64) * 100.
-        )
+        let percentage = if self.total == 0 {
+            0.0
+        } else {
+            usize_to_f64(self.good) / usize_to_f64(self.total) * 100.0
+        };
+        write!(f, "Percentage: {percentage:.2}%")
     }
 }

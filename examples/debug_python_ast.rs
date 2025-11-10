@@ -3,7 +3,7 @@ use tree_sitter::Parser;
 
 fn main() {
     let code = "if a and b:\n    pass";
-    println!("Code:\n{}\n", code);
+    println!("Code:\n{code}\n");
 
     let language = tree_sitter_python::LANGUAGE.into();
     let mut parser = Parser::new();
@@ -18,17 +18,13 @@ fn main() {
 
 fn print_tree(node: &tree_sitter::Node, depth: usize) {
     let indent = "  ".repeat(depth);
-    println!(
-        "{}[{:3}] {} ({})",
-        indent,
-        node.kind_id(),
-        node.kind(),
-        if node.child_count() > 0 {
-            format!("{} children", node.child_count())
-        } else {
-            "leaf".to_string()
-        }
-    );
+    let kind_id = node.kind_id();
+    let child_desc = if node.child_count() > 0 {
+        format!("{} children", node.child_count())
+    } else {
+        "leaf".to_string()
+    };
+    println!("{indent}[{kind_id:3}] {} ({child_desc})", node.kind(),);
 
     for i in 0..node.child_count() {
         if let Some(child) = node.child(i) {

@@ -3,7 +3,11 @@ use std::{
     path::PathBuf,
 };
 
-use crate::{checker::Checker, tools::*, traits::*};
+use crate::{
+    checker::Checker,
+    tools::write_file,
+    traits::{Callback, ParserTrait},
+};
 
 static CR: [u8; 8192] = [b'\n'; 8192];
 
@@ -33,10 +37,10 @@ pub fn rm_comments<T: ParserTrait>(parser: &T) -> Option<Vec<u8>> {
             }
         }
     }
-    if !spans.is_empty() {
-        Some(remove_from_code(parser.get_code(), spans))
-    } else {
+    if spans.is_empty() {
         None
+    } else {
+        Some(remove_from_code(parser.get_code(), spans))
     }
 }
 

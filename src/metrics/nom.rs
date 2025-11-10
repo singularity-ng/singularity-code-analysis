@@ -5,7 +5,19 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, macros::implement_metric_trait, *};
+use crate::{
+    checker::Checker, macros::implement_metric_trait, node::Node, CcommentCode, CppCode,
+    CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode, JavaCode, JavascriptCode, KotlinCode,
+    LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode, TsxCode, TypescriptCode,
+};
+
+#[inline]
+fn usize_to_f64(value: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f64
+    }
+}
 
 /// The `Nom` metric suite.
 #[derive(Clone, Debug)]
@@ -86,6 +98,11 @@ impl fmt::Display for Stats {
 }
 
 impl Stats {
+    #[inline]
+    fn space_count_as_f64(&self) -> f64 {
+        usize_to_f64(self.space_count.max(1))
+    }
+
     /// Merges a second `Nom` metric suite into the first one
     pub fn merge(&mut self, other: &Stats) {
         self.functions_min = self.functions_min.min(other.functions_min);
@@ -99,75 +116,87 @@ impl Stats {
 
     /// Counts the number of function definitions in a scope
     #[inline]
+    #[must_use]
     pub fn functions(&self) -> f64 {
         // Only function definitions are considered, not general declarations
-        self.functions as f64
+        usize_to_f64(self.functions)
     }
 
     /// Counts the number of closures in a scope
     #[inline]
+    #[must_use]
     pub fn closures(&self) -> f64 {
-        self.closures as f64
+        usize_to_f64(self.closures)
     }
 
     /// Return the sum metric for functions
     #[inline]
+    #[must_use]
     pub fn functions_sum(&self) -> f64 {
         // Only function definitions are considered, not general declarations
-        self.functions_sum as f64
+        usize_to_f64(self.functions_sum)
     }
 
     /// Return the sum metric for closures
     #[inline]
+    #[must_use]
     pub fn closures_sum(&self) -> f64 {
-        self.closures_sum as f64
+        usize_to_f64(self.closures_sum)
     }
 
     /// Returns the average number of function definitions over all spaces
     #[inline]
+    #[must_use]
     pub fn functions_average(&self) -> f64 {
-        self.functions_sum() / self.space_count as f64
+        self.functions_sum() / self.space_count_as_f64()
     }
 
     /// Returns the average number of closures over all spaces
     #[inline]
+    #[must_use]
     pub fn closures_average(&self) -> f64 {
-        self.closures_sum() / self.space_count as f64
+        self.closures_sum() / self.space_count_as_f64()
     }
 
     /// Returns the average number of function definitions and closures over all spaces
     #[inline]
+    #[must_use]
     pub fn average(&self) -> f64 {
-        self.total() / self.space_count as f64
+        self.total() / self.space_count_as_f64()
     }
 
     /// Counts the number of function definitions in a scope
     #[inline]
+    #[must_use]
     pub fn functions_min(&self) -> f64 {
         // Only function definitions are considered, not general declarations
-        self.functions_min as f64
+        usize_to_f64(self.functions_min)
     }
 
     /// Counts the number of closures in a scope
     #[inline]
+    #[must_use]
     pub fn closures_min(&self) -> f64 {
-        self.closures_min as f64
+        usize_to_f64(self.closures_min)
     }
     /// Counts the number of function definitions in a scope
     #[inline]
+    #[must_use]
     pub fn functions_max(&self) -> f64 {
         // Only function definitions are considered, not general declarations
-        self.functions_max as f64
+        usize_to_f64(self.functions_max)
     }
 
     /// Counts the number of closures in a scope
     #[inline]
+    #[must_use]
     pub fn closures_max(&self) -> f64 {
-        self.closures_max as f64
+        usize_to_f64(self.closures_max)
     }
     /// Returns the total number of function definitions and
     /// closures in a scope
     #[inline]
+    #[must_use]
     pub fn total(&self) -> f64 {
         self.functions_sum() + self.closures_sum()
     }
@@ -224,8 +253,10 @@ implement_metric_trait!(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{
+        tools::check_metrics, CppParser, JavaParser, JavascriptParser, ParserEngineRust,
+        PythonParser,
+    };
 
     #[test]
     fn python_nom() {
@@ -768,29 +799,5 @@ mod tests {
                 );
             },
         );
-    }
-}
-
-#[cfg(test)]
-mod arrow_function_debug {
-    use super::*;
-
-    #[test]
-    fn test_simple_arrow() {
-        check_metrics::<JavascriptParser>("const x = () => {};", "test.js", |metric| {
-            // Just check if any functions/closures are found
-            println!(
-                "Simple arrow: functions={}, closures={}, spaces={}",
-                metric.nom.functions(),
-                metric.nom.closures(),
-                metric.nom.space_count
-            );
-            assert!(
-                metric.nom.functions() > 0.0
-                    || metric.nom.closures() > 0.0
-                    || metric.nom.space_count > 1,
-                "Arrow function not recognized at all"
-            );
-        });
     }
 }

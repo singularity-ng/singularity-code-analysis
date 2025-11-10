@@ -45,7 +45,7 @@
 //! - **Dependency Coupling**: Inter-module coupling strength
 //! - **Error Handling Coverage**: Exception path robustness
 
-#![allow(clippy::upper_case_acronyms)]
+#![allow(clippy::upper_case_acronyms, clippy::wildcard_imports)]
 
 mod c_langs_macros;
 mod c_macro;

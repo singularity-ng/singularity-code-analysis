@@ -5,7 +5,20 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, langs::*, macros::implement_metric_trait, node::Node, *};
+use crate::{
+    checker::Checker, language_java::Java, macros::implement_metric_trait, node::Node,
+    traits::Search, CcommentCode, CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode,
+    JavaCode, JavascriptCode, KotlinCode, LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode,
+    TsxCode, TypescriptCode,
+};
+
+#[inline]
+fn usize_to_f64(value: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f64
+    }
+}
 
 /// The `Npm` metric.
 ///
@@ -72,50 +85,58 @@ impl Stats {
 
     /// Returns the number of class public methods in a space.
     #[inline]
+    #[must_use]
     pub fn class_npm(&self) -> f64 {
-        self.class_npm as f64
+        usize_to_f64(self.class_npm)
     }
 
     /// Returns the number of interface public methods in a space.
     #[inline]
+    #[must_use]
     pub fn interface_npm(&self) -> f64 {
-        self.interface_npm as f64
+        usize_to_f64(self.interface_npm)
     }
 
     /// Returns the number of class methods in a space.
     #[inline]
+    #[must_use]
     pub fn class_nm(&self) -> f64 {
-        self.class_nm as f64
+        usize_to_f64(self.class_nm)
     }
 
     /// Returns the number of interface methods in a space.
     #[inline]
+    #[must_use]
     pub fn interface_nm(&self) -> f64 {
-        self.interface_nm as f64
+        usize_to_f64(self.interface_nm)
     }
 
     /// Returns the number of class public methods sum in a space.
     #[inline]
+    #[must_use]
     pub fn class_npm_sum(&self) -> f64 {
-        self.class_npm_sum as f64
+        usize_to_f64(self.class_npm_sum)
     }
 
     /// Returns the number of interface public methods sum in a space.
     #[inline]
+    #[must_use]
     pub fn interface_npm_sum(&self) -> f64 {
-        self.interface_npm_sum as f64
+        usize_to_f64(self.interface_npm_sum)
     }
 
     /// Returns the number of class methods sum in a space.
     #[inline]
+    #[must_use]
     pub fn class_nm_sum(&self) -> f64 {
-        self.class_nm_sum as f64
+        usize_to_f64(self.class_nm_sum)
     }
 
     /// Returns the number of interface methods sum in a space.
     #[inline]
+    #[must_use]
     pub fn interface_nm_sum(&self) -> f64 {
-        self.interface_nm_sum as f64
+        usize_to_f64(self.interface_nm_sum)
     }
 
     /// Returns the class `Coa` metric value
@@ -128,7 +149,11 @@ impl Stats {
     /// security metric for not classified methods.
     /// Paper: <https://ieeexplore.ieee.org/abstract/document/5381538>
     #[inline]
+    #[must_use]
     pub fn class_coa(&self) -> f64 {
+        if self.class_nm_sum == 0 {
+            return f64::NAN;
+        }
         self.class_npm_sum() / self.class_nm_sum()
     }
 
@@ -142,6 +167,7 @@ impl Stats {
     /// security metric for not classified methods.
     /// Paper: <https://ieeexplore.ieee.org/abstract/document/5381538>
     #[inline]
+    #[must_use]
     pub fn interface_coa(&self) -> f64 {
         // For the Java language it's not necessary to compute the metric value
         // The metric value in Java can only be 1.0 or f64:NAN
@@ -162,18 +188,24 @@ impl Stats {
     /// security metric for not classified methods.
     /// Paper: <https://ieeexplore.ieee.org/abstract/document/5381538>
     #[inline]
+    #[must_use]
     pub fn total_coa(&self) -> f64 {
+        if self.total_nm() == 0.0 {
+            return f64::NAN;
+        }
         self.total_npm() / self.total_nm()
     }
 
     /// Returns the total number of public methods in a space.
     #[inline]
+    #[must_use]
     pub fn total_npm(&self) -> f64 {
         self.class_npm_sum() + self.interface_npm_sum()
     }
 
     /// Returns the total number of methods in a space.
     #[inline]
+    #[must_use]
     pub fn total_nm(&self) -> f64 {
         self.class_nm_sum() + self.interface_nm_sum()
     }
@@ -204,7 +236,7 @@ where
 
 impl Npm for JavaCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Java::*;
+        use Java::{ClassBody, InterfaceBody, Modifiers, Public};
 
         // Enables the `Npm` metric if computing stats of a class space
         if Self::is_func_space(node) && stats.is_disabled() {
@@ -267,8 +299,7 @@ implement_metric_trait!(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{tools::check_metrics, JavaParser};
 
     #[test]
     fn java_constructors() {

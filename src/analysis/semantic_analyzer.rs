@@ -5,7 +5,23 @@
 
 use crate::langs::LANG;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{cmp::Ordering, collections::HashMap};
+
+#[inline]
+fn usize_to_f32(value: usize) -> f32 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f32
+    }
+}
+
+#[inline]
+fn u32_to_f32(value: u32) -> f32 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f32
+    }
+}
 
 /// Semantic analyzer for code understanding
 #[derive(Debug, Clone)]
@@ -105,6 +121,7 @@ impl Default for SemanticAnalyzer {
 
 impl SemanticAnalyzer {
     /// Create a new semantic analyzer
+    #[must_use]
     pub fn new() -> Self {
         Self {
             code_vectors: HashMap::new(),
@@ -114,6 +131,7 @@ impl SemanticAnalyzer {
     }
 
     /// Create with custom similarity threshold
+    #[must_use]
     pub fn with_threshold(threshold: f32) -> Self {
         Self {
             code_vectors: HashMap::new(),
@@ -124,8 +142,9 @@ impl SemanticAnalyzer {
 
     /// Generate embeddings for code blocks
     /// This is a simplified implementation - in production, you'd use
-    /// a proper embedding model like sentence-transformers or OpenAI embeddings
+    /// a proper embedding model like sentence-transformers or `OpenAI` embeddings
     #[inline]
+    #[must_use]
     pub fn embed_code(&self, code: &str) -> Vec<f32> {
         // Simplified embedding generation based on character frequency
         // In production, replace with actual embedding model
@@ -133,14 +152,14 @@ impl SemanticAnalyzer {
 
         for (i, ch) in code.chars().enumerate() {
             if i < 128 {
-                embedding[i] = (ch as u32) as f32 / 127.0; // Normalize to 0-1
+                embedding[i] = u32_to_f32(u32::from(ch)) / 127.0; // Normalize to 0-1
             }
         }
 
         // Add some semantic features
-        let lines = code.lines().count() as f32;
-        let functions = code.matches("fn ").count() as f32;
-        let classes = code.matches("class ").count() as f32;
+        let lines = usize_to_f32(code.lines().count());
+        let functions = usize_to_f32(code.matches("fn ").count());
+        let classes = usize_to_f32(code.matches("class ").count());
 
         // Add these as additional dimensions
         if embedding.len() > 100 {
@@ -157,19 +176,20 @@ impl SemanticAnalyzer {
     }
 
     /// Find semantically similar code patterns
+    #[must_use]
     pub fn find_similar_patterns(&self, query: &str) -> Vec<CodePattern> {
         let query_embedding = self.embed_code(query);
         let mut similar_patterns = Vec::new();
 
         // Calculate similarity with stored patterns
         for (pattern_id, pattern_embedding) in &self.code_vectors {
-            let similarity = self.cosine_similarity(&query_embedding, pattern_embedding);
+            let similarity = Self::cosine_similarity(&query_embedding, pattern_embedding);
 
             if similarity >= self.similarity_threshold {
                 // In a real implementation, you'd retrieve the actual pattern
                 // from a database using the pattern_id
                 similar_patterns.push(CodePattern {
-                    name: format!("Pattern_{}", pattern_id),
+                    name: format!("Pattern_{pattern_id}"),
                     description: "Similar pattern found".to_string(),
                     pattern_type: PatternType::DesignPattern,
                     complexity_score: similarity,
@@ -180,12 +200,16 @@ impl SemanticAnalyzer {
         }
 
         // Sort by similarity score
-        similar_patterns
-            .sort_by(|a, b| b.complexity_score.partial_cmp(&a.complexity_score).unwrap());
+        similar_patterns.sort_by(|a, b| {
+            b.complexity_score
+                .partial_cmp(&a.complexity_score)
+                .unwrap_or(Ordering::Equal)
+        });
         similar_patterns
     }
 
     /// Detect code smells and anti-patterns
+    #[must_use]
     pub fn detect_code_smells(&self, code: &str) -> Vec<CodeSmell> {
         let mut code_smells = Vec::new();
 
@@ -194,7 +218,7 @@ impl SemanticAnalyzer {
         if lines > 50 {
             code_smells.push(CodeSmell {
                 name: "Long Function".to_string(),
-                description: format!("Function has {} lines, consider breaking it down", lines),
+                description: format!("Function has {lines} lines, consider breaking it down"),
                 severity: Severity::Medium,
                 location: CodeLocation {
                     file_path: "unknown".to_string(),
@@ -208,11 +232,11 @@ impl SemanticAnalyzer {
         }
 
         // Detect deep nesting (more than 4 levels)
-        let nesting_level = self.calculate_nesting_level(code);
+        let nesting_level = Self::calculate_nesting_level(code);
         if nesting_level > 4 {
             code_smells.push(CodeSmell {
                 name: "Deep Nesting".to_string(),
-                description: format!("Code has {} levels of nesting", nesting_level),
+                description: format!("Code has {nesting_level} levels of nesting"),
                 severity: Severity::High,
                 location: CodeLocation {
                     file_path: "unknown".to_string(),
@@ -227,7 +251,7 @@ impl SemanticAnalyzer {
         }
 
         // Detect duplicate code patterns
-        let duplicates = self.detect_duplicate_code(code);
+        let duplicates = Self::detect_duplicate_code(code);
         for duplicate in duplicates {
             code_smells.push(CodeSmell {
                 name: "Duplicate Code".to_string(),
@@ -242,6 +266,7 @@ impl SemanticAnalyzer {
     }
 
     /// Suggest refactoring opportunities
+    #[must_use]
     pub fn suggest_refactoring(&self, code: &str) -> Vec<RefactoringSuggestion> {
         let mut suggestions = Vec::new();
 
@@ -263,7 +288,7 @@ impl SemanticAnalyzer {
         }
 
         // Suggest reducing nesting
-        let nesting_level = self.calculate_nesting_level(code);
+        let nesting_level = Self::calculate_nesting_level(code);
         if nesting_level > 3 {
             suggestions.push(RefactoringSuggestion {
                 name: "Reduce Nesting".to_string(),
@@ -280,7 +305,7 @@ impl SemanticAnalyzer {
         }
 
         // Suggest removing duplicate code
-        let duplicates = self.detect_duplicate_code(code);
+        let duplicates = Self::detect_duplicate_code(code);
         if !duplicates.is_empty() {
             suggestions.push(RefactoringSuggestion {
                 name: "Remove Duplication".to_string(),
@@ -302,7 +327,7 @@ impl SemanticAnalyzer {
 
     /// Calculate cosine similarity between two vectors
     #[inline]
-    fn cosine_similarity(&self, a: &[f32], b: &[f32]) -> f32 {
+    fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
         if a.len() != b.len() {
             return 0.0;
         }
@@ -319,7 +344,7 @@ impl SemanticAnalyzer {
     }
 
     /// Calculate nesting level in code
-    fn calculate_nesting_level(&self, code: &str) -> usize {
+    fn calculate_nesting_level(code: &str) -> usize {
         let mut max_nesting: usize = 0;
         let mut current_nesting: usize = 0;
 
@@ -346,7 +371,7 @@ impl SemanticAnalyzer {
     }
 
     /// Detect duplicate code patterns
-    fn detect_duplicate_code(&self, code: &str) -> Vec<CodeLocation> {
+    fn detect_duplicate_code(code: &str) -> Vec<CodeLocation> {
         let mut duplicates = Vec::new();
         let lines: Vec<&str> = code.lines().collect();
 
@@ -381,6 +406,7 @@ impl SemanticAnalyzer {
     }
 
     /// Get patterns for a specific language
+    #[must_use]
     pub fn get_patterns_for_language(&self, language: LANG) -> Vec<&CodePattern> {
         self.language_patterns
             .get(&language)
@@ -410,13 +436,14 @@ mod tests {
 
     #[test]
     fn test_cosine_similarity() {
-        let analyzer = SemanticAnalyzer::new();
         let a = vec![1.0, 0.0, 0.0];
         let b = vec![1.0, 0.0, 0.0];
         let c = vec![0.0, 1.0, 0.0];
 
-        assert_eq!(analyzer.cosine_similarity(&a, &b), 1.0);
-        assert_eq!(analyzer.cosine_similarity(&a, &c), 0.0);
+        let ab = SemanticAnalyzer::cosine_similarity(&a, &b);
+        let ac = SemanticAnalyzer::cosine_similarity(&a, &c);
+        assert!((ab - 1.0).abs() < f32::EPSILON);
+        assert!(ac.abs() < f32::EPSILON);
     }
 
     #[test]

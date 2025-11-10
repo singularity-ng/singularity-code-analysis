@@ -6,13 +6,13 @@ fn main() {
     let mut parser = Parser::new();
     parser.set_language(&language).unwrap();
 
-    let source_code = r#"
+    let source_code = r"
 def f(a, b):
     if a and b:
         return 1
     if c and d:
         return 1
-"#;
+";
 
     let tree = parser.parse(source_code, None).unwrap();
     let root = tree.root_node();
@@ -22,9 +22,12 @@ def f(a, b):
 
     println!("\n=== All Named Node Kinds ===");
     for i in 0..language.node_kind_count() {
-        if language.node_kind_is_named(i as u16) {
-            if let Some(kind) = language.node_kind_for_id(i as u16) {
-                println!("{:3}: {}", i, kind);
+        let Ok(kind_id) = u16::try_from(i) else {
+            break;
+        };
+        if language.node_kind_is_named(kind_id) {
+            if let Some(kind) = language.node_kind_for_id(kind_id) {
+                println!("{kind_id:3}: {kind}");
             }
         }
     }

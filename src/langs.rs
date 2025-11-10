@@ -164,7 +164,7 @@ mk_langs!(
     // C# language - Full metrics support
     (
         Csharp,
-        "The `C#` language (CSharp)",
+        "The `C#` language (`CSharp`)",
         "c#",
         CsharpCode,
         CsharpParser,

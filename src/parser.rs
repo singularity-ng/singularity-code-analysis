@@ -54,22 +54,14 @@ pub struct Filter {
 }
 
 impl Filter {
+    #[must_use]
     pub fn any(&self, node: &Node) -> bool {
-        for f in self.filters.iter() {
-            if f(node) {
-                return true;
-            }
-        }
-        false
+        self.filters.iter().any(|f| f(node))
     }
 
+    #[must_use]
     pub fn all(&self, node: &Node) -> bool {
-        for f in self.filters.iter() {
-            if !f(node) {
-                return false;
-            }
-        }
-        true
+        self.filters.iter().all(|f| f(node))
     }
 }
 
@@ -161,7 +153,7 @@ impl<
 
     fn get_filters(&self, filters: &[String]) -> Filter {
         let mut res: Vec<Box<FilterFn>> = Vec::new();
-        for f in filters.iter() {
+        for f in filters {
             let f = f.as_str();
             match f {
                 "all" => res.push(Box::new(|_: &Node| -> bool { true })),
@@ -183,7 +175,7 @@ impl<
             }
         }
         if res.is_empty() {
-            res.push(Box::new(|_: &Node| -> bool { true }))
+            res.push(Box::new(|_: &Node| -> bool { true }));
         }
 
         Filter { filters: res }

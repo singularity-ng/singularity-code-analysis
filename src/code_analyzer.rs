@@ -23,16 +23,13 @@ impl fmt::Display for AnalyzerError {
             AnalyzerError::UnsupportedLanguage(lang) => {
                 write!(
                     f,
-                    "language `{}` is not supported by Singularity Code Analyzer",
-                    lang
+                    "language `{lang}` is not supported by Singularity Code Analyzer"
                 )
             }
-            AnalyzerError::AnalysisFailed { language, reason } => write!(
-                f,
-                "failed to compute metrics for {:?}: {}",
-                language, reason
-            ),
-            AnalyzerError::Io(err) => write!(f, "failed to read source: {}", err),
+            AnalyzerError::AnalysisFailed { language, reason } => {
+                write!(f, "failed to compute metrics for {language:?}: {reason}")
+            }
+            AnalyzerError::Io(err) => write!(f, "failed to read source: {err}"),
         }
     }
 }
@@ -63,6 +60,7 @@ pub struct AnalyzerResult {
 
 impl AnalyzerResult {
     /// Borrow the aggregated metrics for the analyzed space.
+    #[must_use]
     pub fn metrics(&self) -> &crate::spaces::CodeMetrics {
         &self.root_space.metrics
     }
@@ -94,6 +92,7 @@ impl Default for SingularityCodeAnalyzer {
 
 impl SingularityCodeAnalyzer {
     /// Create a new analyzer with all built-in languages registered.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             registry: ParserRegistry::with_builtins(),
@@ -101,11 +100,13 @@ impl SingularityCodeAnalyzer {
     }
 
     /// Create a new analyzer using a custom parser registry.
+    #[must_use]
     pub fn with_registry(registry: ParserRegistry) -> Self {
         Self { registry }
     }
 
     /// Return the set of languages supported by the analyzer.
+    #[must_use]
     pub fn supported_languages(&self) -> Vec<LANG> {
         self.registry.supported_languages()
     }
@@ -114,6 +115,7 @@ impl SingularityCodeAnalyzer {
     ///
     /// Matching is case-insensitive and accepts both enum variants (`"Rust"`)
     /// and display names (`"rust"`).
+    #[must_use]
     pub fn language_from_str(&self, value: &str) -> Option<LANG> {
         let normalized = value.trim().to_lowercase();
         match normalized.as_str() {
@@ -127,21 +129,26 @@ impl SingularityCodeAnalyzer {
         }
 
         LANG::into_enum_iter().find(|lang| {
-            lang.get_name() == normalized || format!("{:?}", lang).to_lowercase() == normalized
+            lang.get_name() == normalized || format!("{lang:?}").to_lowercase() == normalized
         })
     }
 
     /// Detect the language for the given file path using the registry's extension table.
+    #[must_use]
     pub fn detect_language_from_path(&self, path: &Path) -> Option<LANG> {
         self.registry.detect_language_from_path(path)
     }
 
     /// Analyze the provided source buffer for the specified language.
-    pub fn analyze_language<'a>(
+    ///
+    /// # Errors
+    /// Returns [`AnalyzerError::UnsupportedLanguage`] when the language is not registered,
+    /// or [`AnalyzerError::AnalysisFailed`] when metrics could not be produced.
+    pub fn analyze_language(
         &self,
         language: LANG,
         source: impl AsRef<[u8]>,
-        options: AnalyzeOptions<'a>,
+        options: AnalyzeOptions<'_>,
     ) -> Result<AnalyzerResult, AnalyzerError> {
         if self.registry.get_factory(&language).is_none() {
             return Err(AnalyzerError::UnsupportedLanguage(
@@ -149,10 +156,10 @@ impl SingularityCodeAnalyzer {
             ));
         }
 
-        let path_buf = options
-            .virtual_path
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from(format!("memory.{}", language.get_name())));
+        let path_buf = options.virtual_path.map_or_else(
+            || PathBuf::from(format!("memory.{}", language.get_name())),
+            PathBuf::from,
+        );
 
         let buffer = source.as_ref().to_vec();
         let root_space = get_function_spaces(&language, buffer, &path_buf, options.preprocessor)

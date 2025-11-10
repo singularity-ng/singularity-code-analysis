@@ -5,12 +5,16 @@ use termcolor::{Color, ColorChoice, StandardStream, StandardStreamLock};
 use crate::{
     node::Node,
     tools::{color, intense_color},
-    traits::*,
+    traits::{Callback, ParserTrait},
 };
 
 /// Dumps the `AST` of a code.
 ///
 /// Returns a [`Result`] value, when an error occurs.
+///
+/// # Errors
+///
+/// Returns an error if writing to stdout fails.
 ///
 /// # Examples
 ///
@@ -52,8 +56,8 @@ pub fn dump_node(
         true,
         &mut stdout,
         depth,
-        &line_start,
-        &line_end,
+        line_start.as_ref(),
+        line_end.as_ref(),
     );
 
     color(&mut stdout, Color::White)?;
@@ -69,8 +73,8 @@ fn dump_tree_helper(
     last: bool,
     stdout: &mut StandardStreamLock,
     depth: i32,
-    line_start: &Option<usize>,
-    line_end: &Option<usize>,
+    line_start: Option<&usize>,
+    line_end: Option<&usize>,
 ) -> std::io::Result<()> {
     if depth == 0 {
         return Ok(());
@@ -87,10 +91,10 @@ fn dump_tree_helper(
     let node_row = node.start_row() + 1;
     let mut display = true;
     if let Some(line_start) = line_start {
-        display = node_row >= *line_start
+        display = node_row >= *line_start;
     }
     if let Some(line_end) = line_end {
-        display = display && node_row <= *line_end
+        display = display && node_row <= *line_end;
     }
 
     if display {

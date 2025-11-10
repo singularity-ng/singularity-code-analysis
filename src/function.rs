@@ -1,4 +1,7 @@
-use std::{io::Write, path::PathBuf};
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use serde::Serialize;
 use termcolor::{Color, ColorChoice, StandardStream, StandardStreamLock};
@@ -7,7 +10,7 @@ use crate::{
     checker::Checker,
     getter::Getter,
     tools::{color, intense_color},
-    traits::*,
+    traits::{Callback, ParserTrait, Search},
 };
 
 /// Function span data.
@@ -46,7 +49,7 @@ pub fn function<T: ParserTrait>(parser: &T) -> Vec<FunctionSpan> {
                 });
             } else {
                 spans.push(FunctionSpan {
-                    name: "".to_string(),
+                    name: String::new(),
                     start_line,
                     end_line,
                     error: true,
@@ -59,7 +62,7 @@ pub fn function<T: ParserTrait>(parser: &T) -> Vec<FunctionSpan> {
 }
 
 fn dump_span(
-    span: FunctionSpan,
+    span: &FunctionSpan,
     stdout: &mut StandardStreamLock,
     last: bool,
 ) -> std::io::Result<()> {
@@ -93,7 +96,7 @@ fn dump_span(
     writeln!(stdout, "{}.", span.end_line)
 }
 
-fn dump_spans(mut spans: Vec<FunctionSpan>, path: PathBuf) -> std::io::Result<()> {
+fn dump_spans(spans: &[FunctionSpan], path: &Path) -> std::io::Result<()> {
     if !spans.is_empty() {
         let stdout = StandardStream::stdout(ColorChoice::Always);
         let mut stdout = stdout.lock();
@@ -101,10 +104,13 @@ fn dump_spans(mut spans: Vec<FunctionSpan>, path: PathBuf) -> std::io::Result<()
         intense_color(&mut stdout, Color::Yellow)?;
         writeln!(&mut stdout, "In file {}", path.to_str().unwrap_or("..."))?;
 
-        for span in spans.drain(..spans.len() - 1) {
+        let last_index = spans.len().saturating_sub(1);
+        for span in spans.iter().take(last_index) {
             dump_span(span, &mut stdout, false)?;
         }
-        dump_span(spans.pop().unwrap(), &mut stdout, true)?;
+        if let Some(last) = spans.last() {
+            dump_span(last, &mut stdout, true)?;
+        }
         color(&mut stdout, Color::White)?;
     }
     Ok(())
@@ -127,6 +133,7 @@ impl Callback for Function {
     type Cfg = FunctionCfg;
 
     fn call<T: ParserTrait>(cfg: Self::Cfg, parser: &T) -> Self::Res {
-        dump_spans(function(parser), cfg.path)
+        let spans = function(parser);
+        dump_spans(&spans, &cfg.path)
     }
 }

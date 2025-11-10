@@ -5,7 +5,11 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, macros::implement_metric_trait, *};
+use crate::{
+    checker::Checker, cyclomatic, macros::implement_metric_trait, spaces::SpaceKind, CcommentCode,
+    CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode, JavaCode, JavascriptCode,
+    KotlinCode, LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode, TsxCode, TypescriptCode,
+};
 
 // Historical note: tree-sitter-java 0.19.0 failed to recognise modern `switch` constructs
 // (https://github.com/tree-sitter/tree-sitter-java/issues/69). The fix landed upstream in
@@ -57,14 +61,12 @@ impl fmt::Display for Stats {
 impl Stats {
     /// Merges a second `Wmc` metric into the first one
     pub fn merge(&mut self, other: &Stats) {
-        use SpaceKind::*;
-
         // Merges the cyclomatic complexity of a method
         // into the `Wmc` metric value of a class or interface
-        if let Function = other.space_kind {
+        if other.space_kind == SpaceKind::Function {
             match self.space_kind {
-                Class => self.class_wmc += other.cyclomatic,
-                Interface => self.interface_wmc += other.cyclomatic,
+                SpaceKind::Class => self.class_wmc += other.cyclomatic,
+                SpaceKind::Interface => self.interface_wmc += other.cyclomatic,
                 _ => {}
             }
         }
@@ -75,30 +77,35 @@ impl Stats {
 
     /// Returns the `Wmc` metric value of the classes in a space.
     #[inline]
+    #[must_use]
     pub fn class_wmc(&self) -> f64 {
         self.class_wmc
     }
 
     /// Returns the `Wmc` metric value of the interfaces in a space.
     #[inline]
+    #[must_use]
     pub fn interface_wmc(&self) -> f64 {
         self.interface_wmc
     }
 
     /// Returns the sum of the `Wmc` metric values of the classes in a space.
     #[inline]
+    #[must_use]
     pub fn class_wmc_sum(&self) -> f64 {
         self.class_wmc_sum
     }
 
     /// Returns the sum of the `Wmc` metric values of the interfaces in a space.
     #[inline]
+    #[must_use]
     pub fn interface_wmc_sum(&self) -> f64 {
         self.interface_wmc_sum
     }
 
     /// Returns the total `Wmc` metric value in a space.
     #[inline]
+    #[must_use]
     pub fn total_wmc(&self) -> f64 {
         self.class_wmc_sum() + self.interface_wmc_sum()
     }
@@ -127,16 +134,17 @@ where
 
 impl Wmc for JavaCode {
     fn compute(space_kind: SpaceKind, cyclomatic: &cyclomatic::Stats, stats: &mut Stats) {
-        use SpaceKind::*;
-
-        if let Unit | Class | Interface | Function = space_kind {
-            if stats.space_kind == Unknown {
-                stats.space_kind = space_kind;
+        match space_kind {
+            SpaceKind::Unit | SpaceKind::Class | SpaceKind::Interface | SpaceKind::Function => {
+                if stats.space_kind == SpaceKind::Unknown {
+                    stats.space_kind = space_kind;
+                }
+                if matches!(space_kind, SpaceKind::Function) {
+                    // Saves the cyclomatic complexity of the method
+                    stats.cyclomatic = cyclomatic.cyclomatic_sum();
+                }
             }
-            if space_kind == Function {
-                // Saves the cyclomatic complexity of the method
-                stats.cyclomatic = cyclomatic.cyclomatic_sum();
-            }
+            _ => {}
         }
     }
 }
@@ -163,8 +171,7 @@ implement_metric_trait!(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{tools::check_metrics, JavaParser};
 
     #[test]
     fn java_single_class() {

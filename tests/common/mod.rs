@@ -69,19 +69,19 @@ pub fn compare_rca_output_with_files(repo_name: &str, include: &[&str], exclude:
 
     let cfg = Config { language: None };
 
-    let mut gsbi = GlobSetBuilder::new();
+    let mut include_globs = GlobSetBuilder::new();
     for file in include {
-        gsbi.add(Glob::new(file).unwrap());
+        include_globs.add(Glob::new(file).unwrap());
     }
 
-    let mut gsbe = GlobSetBuilder::new();
+    let mut exclude_globs = GlobSetBuilder::new();
     for file in exclude {
-        gsbe.add(Glob::new(file).unwrap());
+        exclude_globs.add(Glob::new(file).unwrap());
     }
 
     let files_data = FilesData {
-        include: gsbi.build().unwrap(),
-        exclude: gsbe.build().unwrap(),
+        include: include_globs.build().unwrap(),
+        exclude: exclude_globs.build().unwrap(),
         paths: vec![Path::new(REPO).join(repo_name)],
     };
 

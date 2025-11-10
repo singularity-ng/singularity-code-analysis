@@ -13,6 +13,23 @@
 /// # Returns
 /// * `(complexity_trend, maintainability_trend, test_coverage_trend)`
 #[inline]
+fn len_to_f64(len: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        len as f64
+    }
+}
+
+#[inline]
+fn usize_to_rate(count: usize, total: usize) -> f64 {
+    if total == 0 {
+        return 0.0;
+    }
+    len_to_f64(count) / len_to_f64(total)
+}
+
+#[inline]
+#[must_use]
 pub fn calculate_evolution_trends(
     complexity_values: &[f64],
     maintainability_values: &[f64],
@@ -27,6 +44,7 @@ pub fn calculate_evolution_trends(
 
 /// Calculate trend direction from a series of values
 #[inline]
+#[must_use]
 pub fn calculate_trend(values: &[f64]) -> TrendDirection {
     if values.len() < 2 {
         return TrendDirection::Stable;
@@ -35,8 +53,8 @@ pub fn calculate_trend(values: &[f64]) -> TrendDirection {
     let first_half = &values[..values.len() / 2];
     let second_half = &values[values.len() / 2..];
 
-    let first_avg = first_half.iter().sum::<f64>() / first_half.len() as f64;
-    let second_avg = second_half.iter().sum::<f64>() / second_half.len() as f64;
+    let first_avg = first_half.iter().sum::<f64>() / len_to_f64(first_half.len());
+    let second_avg = second_half.iter().sum::<f64>() / len_to_f64(second_half.len());
 
     let change_percentage = (second_avg - first_avg) / first_avg * 100.0;
 
@@ -58,6 +76,7 @@ pub fn calculate_trend(values: &[f64]) -> TrendDirection {
 /// # Returns
 /// * Vector of detected refactoring events
 #[inline]
+#[must_use]
 pub fn detect_refactoring_events(
     before_metrics: &EvolutionMetrics,
     after_metrics: &EvolutionMetrics,
@@ -89,10 +108,11 @@ pub fn detect_refactoring_events(
 
 /// Calculate improvement score between two metric sets
 #[inline]
+#[must_use]
 pub fn calculate_improvement_score(before: &EvolutionMetrics, after: &EvolutionMetrics) -> f64 {
-    let complexity_improvement = (before.cyclomatic_complexity as f64
-        - after.cyclomatic_complexity as f64)
-        / before.cyclomatic_complexity as f64;
+    let complexity_improvement = (f64::from(before.cyclomatic_complexity)
+        - f64::from(after.cyclomatic_complexity))
+        / f64::from(before.cyclomatic_complexity.max(1));
     let maintainability_improvement =
         (after.maintainability_index - before.maintainability_index) / 100.0;
     let test_coverage_improvement = (after.test_coverage - before.test_coverage) / 100.0;
@@ -102,6 +122,7 @@ pub fn calculate_improvement_score(before: &EvolutionMetrics, after: &EvolutionM
 
 /// Calculate bug introduction rate from version history
 #[inline]
+#[must_use]
 pub fn calculate_bug_introduction_rate(technical_debt_values: &[f64]) -> f64 {
     if technical_debt_values.len() < 2 {
         return 0.0;
@@ -112,11 +133,12 @@ pub fn calculate_bug_introduction_rate(technical_debt_values: &[f64]) -> f64 {
         .filter(|w| w[1] > w[0])
         .count();
 
-    increases as f64 / (technical_debt_values.len() - 1) as f64
+    usize_to_rate(increases, technical_debt_values.len() - 1)
 }
 
 /// Calculate improvement success rate from version history
 #[inline]
+#[must_use]
 pub fn calculate_improvement_success_rate(maintainability_values: &[f64]) -> f64 {
     if maintainability_values.len() < 2 {
         return 0.0;
@@ -127,11 +149,12 @@ pub fn calculate_improvement_success_rate(maintainability_values: &[f64]) -> f64
         .filter(|w| w[1] > w[0])
         .count();
 
-    improvements as f64 / (maintainability_values.len() - 1) as f64
+    usize_to_rate(improvements, maintainability_values.len() - 1)
 }
 
 /// Predict future quality based on trends
 #[inline]
+#[must_use]
 pub fn predict_future_quality(
     current_metrics: &EvolutionMetrics,
     complexity_trend: TrendDirection,
@@ -158,8 +181,8 @@ fn detect_extract_method(
         Some(RefactoringEvent {
             refactoring_type: RefactoringType::ExtractMethod,
             improvement_score: calculate_improvement_score(before, after),
-            complexity_reduction: before.cyclomatic_complexity as f64
-                - after.cyclomatic_complexity as f64,
+            complexity_reduction: f64::from(before.cyclomatic_complexity)
+                - f64::from(after.cyclomatic_complexity),
             maintainability_improvement: after.maintainability_index - before.maintainability_index,
         })
     } else {
@@ -175,8 +198,8 @@ fn detect_extract_class(
         Some(RefactoringEvent {
             refactoring_type: RefactoringType::ExtractClass,
             improvement_score: calculate_improvement_score(before, after),
-            complexity_reduction: before.cyclomatic_complexity as f64
-                - after.cyclomatic_complexity as f64,
+            complexity_reduction: f64::from(before.cyclomatic_complexity)
+                - f64::from(after.cyclomatic_complexity),
             maintainability_improvement: after.maintainability_index - before.maintainability_index,
         })
     } else {
@@ -194,8 +217,8 @@ fn detect_remove_duplication(
         Some(RefactoringEvent {
             refactoring_type: RefactoringType::RemoveDuplication,
             improvement_score: calculate_improvement_score(before, after),
-            complexity_reduction: before.cyclomatic_complexity as f64
-                - after.cyclomatic_complexity as f64,
+            complexity_reduction: f64::from(before.cyclomatic_complexity)
+                - f64::from(after.cyclomatic_complexity),
             maintainability_improvement: after.maintainability_index - before.maintainability_index,
         })
     } else {
@@ -213,8 +236,8 @@ fn detect_simplify_conditional(
         Some(RefactoringEvent {
             refactoring_type: RefactoringType::SimplifyConditional,
             improvement_score: calculate_improvement_score(before, after),
-            complexity_reduction: before.cyclomatic_complexity as f64
-                - after.cyclomatic_complexity as f64,
+            complexity_reduction: f64::from(before.cyclomatic_complexity)
+                - f64::from(after.cyclomatic_complexity),
             maintainability_improvement: after.maintainability_index - before.maintainability_index,
         })
     } else {
@@ -224,9 +247,9 @@ fn detect_simplify_conditional(
 
 fn predict_complexity(current: &EvolutionMetrics, trend: TrendDirection) -> f64 {
     match trend {
-        TrendDirection::Increasing => current.cyclomatic_complexity as f64 * 1.1,
-        TrendDirection::Decreasing => current.cyclomatic_complexity as f64 * 0.9,
-        TrendDirection::Stable => current.cyclomatic_complexity as f64,
+        TrendDirection::Increasing => f64::from(current.cyclomatic_complexity) * 1.1,
+        TrendDirection::Decreasing => f64::from(current.cyclomatic_complexity) * 0.9,
+        TrendDirection::Stable => f64::from(current.cyclomatic_complexity),
     }
 }
 
@@ -263,7 +286,7 @@ fn calculate_prediction_confidence(
         confidence += 0.1;
     }
 
-    confidence.min(1.0_f64).max(0.0_f64)
+    confidence.clamp(0.0_f64, 1.0_f64)
 }
 
 /// Trend direction

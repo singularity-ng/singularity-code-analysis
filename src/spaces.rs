@@ -2,16 +2,25 @@ use std::{
     collections::HashMap,
     fmt,
     path::{Path, PathBuf},
+    string::ToString,
 };
 
 use serde::Serialize;
+
+#[inline]
+fn f64_to_usize(value: f64) -> usize {
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    {
+        value as usize
+    }
+}
 
 use crate::{
     abc::{self, Abc},
     checker::Checker,
     cognitive::{self, Cognitive},
     cyclomatic::{self, Cyclomatic},
-    dump_metrics::*,
+    dump_metrics::dump_root,
     enter_code_context,
     exit::{self, Exit},
     getter::Getter,
@@ -23,7 +32,7 @@ use crate::{
     nom::{self, Nom},
     npa::{self, Npa},
     npm::{self, Npm},
-    traits::*,
+    traits::{Callback, ParserTrait},
     wmc::{self, Wmc},
 };
 
@@ -195,9 +204,9 @@ fn compute_halstead_mi_and_wmc<T: ParserTrait>(state: &mut State) {
 
 #[inline]
 fn compute_averages(state: &mut State) {
-    let nom_functions = state.space.metrics.nom.functions_sum() as usize;
-    let nom_closures = state.space.metrics.nom.closures_sum() as usize;
-    let nom_total = state.space.metrics.nom.total() as usize;
+    let nom_functions = f64_to_usize(state.space.metrics.nom.functions_sum());
+    let nom_closures = f64_to_usize(state.space.metrics.nom.closures_sum());
+    let nom_total = f64_to_usize(state.space.metrics.nom.total());
     // Cognitive average
     state.space.metrics.cognitive.finalize(nom_total);
     // Nexit average
@@ -355,7 +364,7 @@ pub fn metrics<'a, T: ParserTrait>(parser: &'a T, path: &'a Path) -> Option<Func
     finalize::<T>(&mut state_stack, usize::MAX);
 
     state_stack.pop().map(|mut state| {
-        state.space.name = path.to_str().map(|name| name.to_string());
+        state.space.name = path.to_str().map(ToString::to_string);
         state.space
     })
 }

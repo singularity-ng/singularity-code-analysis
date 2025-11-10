@@ -1,6 +1,10 @@
 use std::path::PathBuf;
 
-use crate::{dump::*, node::Node, traits::*};
+use crate::{
+    dump::dump_node,
+    node::Node,
+    traits::{Callback, ParserTrait},
+};
 
 /// Finds the types of nodes specified in the input slice.
 pub fn find<'a, T: ParserTrait>(parser: &'a T, filters: &[String]) -> Option<Vec<Node<'a>>> {

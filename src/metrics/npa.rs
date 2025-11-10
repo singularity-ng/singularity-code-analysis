@@ -5,7 +5,20 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, langs::*, macros::implement_metric_trait, node::Node, *};
+use crate::{
+    checker::Checker, language_java::Java, macros::implement_metric_trait, node::Node,
+    traits::Search, CcommentCode, CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode,
+    JavaCode, JavascriptCode, KotlinCode, LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode,
+    TsxCode, TypescriptCode,
+};
+
+#[inline]
+fn usize_to_f64(value: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f64
+    }
+}
 
 /// The `Npa` metric.
 ///
@@ -72,50 +85,58 @@ impl Stats {
 
     /// Returns the number of class public attributes in a space.
     #[inline]
+    #[must_use]
     pub fn class_npa(&self) -> f64 {
-        self.class_npa as f64
+        usize_to_f64(self.class_npa)
     }
 
     /// Returns the number of interface public attributes in a space.
     #[inline]
+    #[must_use]
     pub fn interface_npa(&self) -> f64 {
-        self.interface_npa as f64
+        usize_to_f64(self.interface_npa)
     }
 
     /// Returns the number of class attributes in a space.
     #[inline]
+    #[must_use]
     pub fn class_na(&self) -> f64 {
-        self.class_na as f64
+        usize_to_f64(self.class_na)
     }
 
     /// Returns the number of interface attributes in a space.
     #[inline]
+    #[must_use]
     pub fn interface_na(&self) -> f64 {
-        self.interface_na as f64
+        usize_to_f64(self.interface_na)
     }
 
     /// Returns the number of class public attributes sum in a space.
     #[inline]
+    #[must_use]
     pub fn class_npa_sum(&self) -> f64 {
-        self.class_npa_sum as f64
+        usize_to_f64(self.class_npa_sum)
     }
 
     /// Returns the number of interface public attributes sum in a space.
     #[inline]
+    #[must_use]
     pub fn interface_npa_sum(&self) -> f64 {
-        self.interface_npa_sum as f64
+        usize_to_f64(self.interface_npa_sum)
     }
 
     /// Returns the number of class attributes sum in a space.
     #[inline]
+    #[must_use]
     pub fn class_na_sum(&self) -> f64 {
-        self.class_na_sum as f64
+        usize_to_f64(self.class_na_sum)
     }
 
     /// Returns the number of interface attributes sum in a space.
     #[inline]
+    #[must_use]
     pub fn interface_na_sum(&self) -> f64 {
-        self.interface_na_sum as f64
+        usize_to_f64(self.interface_na_sum)
     }
 
     /// Returns the class `Cda` metric value
@@ -128,8 +149,12 @@ impl Stats {
     /// security metric for not classified attributes.
     /// Paper: <https://ieeexplore.ieee.org/abstract/document/5381538>
     #[inline]
+    #[must_use]
     pub fn class_cda(&self) -> f64 {
-        self.class_npa_sum() / self.class_na_sum as f64
+        if self.class_na_sum == 0 {
+            return f64::NAN;
+        }
+        self.class_npa_sum() / usize_to_f64(self.class_na_sum)
     }
 
     /// Returns the interface `Cda` metric value
@@ -142,6 +167,7 @@ impl Stats {
     /// security metric for not classified attributes.
     /// Paper: <https://ieeexplore.ieee.org/abstract/document/5381538>
     #[inline]
+    #[must_use]
     pub fn interface_cda(&self) -> f64 {
         // For the Java language it's not necessary to compute the metric value
         // The metric value in Java can only be 1.0 or f64:NAN
@@ -162,18 +188,24 @@ impl Stats {
     /// security metric for not classified attributes.
     /// Paper: <https://ieeexplore.ieee.org/abstract/document/5381538>
     #[inline]
+    #[must_use]
     pub fn total_cda(&self) -> f64 {
+        if self.total_na() == 0.0 {
+            return f64::NAN;
+        }
         self.total_npa() / self.total_na()
     }
 
     /// Returns the total number of public attributes in a space.
     #[inline]
+    #[must_use]
     pub fn total_npa(&self) -> f64 {
         self.class_npa_sum() + self.interface_npa_sum()
     }
 
     /// Returns the total number of attributes in a space.
     #[inline]
+    #[must_use]
     pub fn total_na(&self) -> f64 {
         self.class_na_sum() + self.interface_na_sum()
     }
@@ -204,7 +236,10 @@ where
 
 impl Npa for JavaCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Java::*;
+        use Java::{
+            ClassBody, ConstantDeclaration, FieldDeclaration, InterfaceBody, Modifiers, Public,
+            VariableDeclarator,
+        };
 
         // Enables the `Npa` metric if computing stats of a class space
         if Self::is_func_space(node) && stats.is_disabled() {
@@ -276,8 +311,7 @@ implement_metric_trait!(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{tools::check_metrics, JavaParser};
 
     #[test]
     fn java_single_attributes() {

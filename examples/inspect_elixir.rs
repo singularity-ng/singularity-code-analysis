@@ -39,9 +39,10 @@ end
 
     println!("\n=== All Named Node Kinds ===");
     for i in 0..language.node_kind_count() {
-        if language.node_kind_is_named(i as u16) {
-            if let Some(kind) = language.node_kind_for_id(i as u16) {
-                println!("{:3}: {}", i, kind);
+        let Ok(kind_id) = u16::try_from(i) else { break; };
+        if language.node_kind_is_named(kind_id) {
+            if let Some(kind) = language.node_kind_for_id(kind_id) {
+                println!("{kind_id:3}: {kind}");
             }
         }
     }
@@ -61,9 +62,9 @@ fn print_node(node: &tree_sitter::Node, source: &[u8], depth: usize) {
         };
 
         if !text.is_empty() && text.len() < 30 {
-            println!("{}{} [{}] = \"{}\"", indent, kind, id, text);
+            println!("{indent}{kind} [{id}] = \"{text}\"");
         } else {
-            println!("{}{} [{}]", indent, kind, id);
+            println!("{indent}{kind} [{id}]");
         }
 
         for i in 0..node.child_count() {

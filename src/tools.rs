@@ -14,6 +14,10 @@ use crate::langs::{fake, *};
 
 /// Reads a file.
 ///
+/// # Errors
+///
+/// Returns an error if the file cannot be opened or read.
+///
 /// # Examples
 ///
 /// ```
@@ -36,6 +40,11 @@ pub fn read_file(path: &Path) -> std::io::Result<Vec<u8>> {
 
 /// Reads a file and adds an `EOL` at its end.
 ///
+/// # Errors
+///
+/// Returns an error if the file metadata cannot be read or if reading the file
+/// fails.
+///
 /// # Examples
 ///
 /// ```
@@ -47,7 +56,10 @@ pub fn read_file(path: &Path) -> std::io::Result<Vec<u8>> {
 /// read_file_with_eol(&path).unwrap();
 /// ```
 pub fn read_file_with_eol(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
-    let file_size = fs::metadata(path).map_or(1024 * 1024, |m| m.len() as usize);
+    let file_size = fs::metadata(path)
+        .ok()
+        .and_then(|m| usize::try_from(m.len()).ok())
+        .unwrap_or(1024 * 1024);
     if file_size <= 3 {
         // this file is very likely almost empty... so nothing to do on it
         return Ok(None);
@@ -90,6 +102,10 @@ pub fn read_file_with_eol(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
 
 /// Writes data to a file.
 ///
+/// # Errors
+///
+/// Returns an error if the file cannot be created or if writing fails.
+///
 /// # Examples
 ///
 /// ```no_run
@@ -108,8 +124,12 @@ pub fn write_file(path: &Path, data: &[u8]) -> std::io::Result<()> {
     Ok(())
 }
 
-/// Detects the language of a code using
-/// the extension of a file.
+#[must_use]
+/// Detects the language associated with a file's extension.
+///
+/// # Panics
+///
+/// Panics if the OS-specific extension cannot be represented as valid UTF-8.
 ///
 /// # Examples
 ///
@@ -131,7 +151,7 @@ pub fn get_language_for_file(path: &Path) -> Option<LANG> {
 }
 
 fn mode_to_str(mode: &[u8]) -> Option<String> {
-    std::str::from_utf8(mode).ok().map(|m| m.to_lowercase())
+    std::str::from_utf8(mode).ok().map(str::to_lowercase)
 }
 
 // comment containing coding info are useful
@@ -210,9 +230,8 @@ pub fn guess_language<'a, P: AsRef<Path>>(buf: &[u8], path: P) -> (Option<LANG>,
     let ext = path
         .as_ref()
         .extension()
-        .map(|e| e.to_str().unwrap())
-        .map(|e| e.to_lowercase())
-        .unwrap_or_else(|| "".to_string());
+        .and_then(|e| e.to_str())
+        .map_or_else(String::new, str::to_lowercase);
     let from_ext = get_from_ext(&ext);
 
     let mode = get_emacs_mode(buf).unwrap_or_default();
@@ -262,7 +281,7 @@ pub(crate) fn remove_blank_lines(data: &mut Vec<u8>) {
 pub(crate) fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
     // Copied from Cargo sources: https://github.com/rust-lang/cargo/blob/master/src/cargo/util/paths.rs#L65
     let mut components = path.as_ref().components().peekable();
-    let mut ret = if let Some(c @ Component::Prefix(..)) = components.peek().cloned() {
+    let mut ret = if let Some(c @ Component::Prefix(..)) = components.peek().copied() {
         components.next();
         PathBuf::from(c.as_os_str())
     } else {
@@ -317,7 +336,7 @@ pub(crate) fn guess_file<S: ::std::hash::BuildHasher>(
         }
 
         let mut new_possibilities = Vec::new();
-        for p in possibilities.iter() {
+        for p in possibilities {
             if p.ends_with(&include_path) && current_path != p {
                 new_possibilities.push(p.clone());
             }
@@ -329,7 +348,7 @@ pub(crate) fn guess_file<S: ::std::hash::BuildHasher>(
         new_possibilities.clear();
 
         if let Some(parent) = current_path.parent() {
-            for p in possibilities.iter() {
+            for p in possibilities {
                 if p.starts_with(parent) && current_path != p {
                     new_possibilities.push(p.clone());
                 }
@@ -343,7 +362,7 @@ pub(crate) fn guess_file<S: ::std::hash::BuildHasher>(
 
         let mut dist_min = usize::MAX;
         let mut path_min = Vec::new();
-        for p in possibilities.iter() {
+        for p in possibilities {
             if current_path == p {
                 continue;
             }
@@ -362,7 +381,7 @@ pub(crate) fn guess_file<S: ::std::hash::BuildHasher>(
             }
         }
 
-        let path_min: Vec<_> = path_min.into_iter().map(|p| p.to_path_buf()).collect();
+        let path_min: Vec<_> = path_min.into_iter().cloned().collect();
         return path_min;
     }
 
@@ -389,23 +408,22 @@ pub(crate) fn check_func_space<T: crate::ParserTrait, F: Fn(crate::FuncSpace)>(
     let mut trimmed_bytes = source.trim_end().trim_matches('\n').as_bytes().to_vec();
     trimmed_bytes.push(b'\n');
     let parser = T::new(trimmed_bytes, &path, None);
-    match crate::metrics(&parser, &path) {
-        Some(func_space) => check(func_space),
-        None => {
-            // For files with no functions, create a default FuncSpace with proper error handling
-            let line_count = std::str::from_utf8(parser.get_code())
-                .map(|s| s.lines().count())
-                .unwrap_or(1);
-            let default_space = crate::FuncSpace {
-                name: path.to_str().map(|name| name.to_string()),
-                start_line: 1,
-                end_line: line_count,
-                kind: crate::SpaceKind::Unit,
-                spaces: Vec::new(),
-                metrics: crate::CodeMetrics::default(),
-            };
-            check(default_space);
-        }
+    if let Some(func_space) = crate::metrics(&parser, &path) {
+        check(func_space);
+    } else {
+        // For files with no functions, create a default FuncSpace with proper error handling
+        let line_count = std::str::from_utf8(parser.get_code())
+            .map(|s| s.lines().count())
+            .unwrap_or(1);
+        let default_space = crate::FuncSpace {
+            name: path.to_str().map(ToString::to_string),
+            start_line: 1,
+            end_line: line_count,
+            kind: crate::SpaceKind::Unit,
+            spaces: Vec::new(),
+            metrics: crate::CodeMetrics::default(),
+        };
+        check(default_space);
     }
 }
 
@@ -415,7 +433,7 @@ pub(crate) fn check_metrics<T: crate::ParserTrait>(
     filename: &str,
     check: fn(crate::CodeMetrics) -> (),
 ) {
-    check_func_space::<T, _>(source, filename, |func_space| check(func_space.metrics))
+    check_func_space::<T, _>(source, filename, |func_space| check(func_space.metrics));
 }
 
 #[cfg(test)]

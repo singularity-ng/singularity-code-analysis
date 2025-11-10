@@ -72,6 +72,7 @@ impl Serialize for AstNode {
 }
 
 impl AstNode {
+    #[must_use]
     pub fn new(r#type: &'static str, value: String, span: Span, children: Vec<AstNode>) -> Self {
         Self {
             r#type,
@@ -112,11 +113,10 @@ fn build<T: ParserTrait>(parser: &T, span: bool, comment: bool) -> Option<AstNod
                     span,
                     comment,
                 ) {
-                    if !child_stack.is_empty() {
-                        child_stack.last_mut().unwrap().push(node);
-                    } else {
+                    if child_stack.is_empty() {
                         return Some(node);
                     }
+                    child_stack.last_mut().unwrap().push(node);
                 }
                 if let Some(next_node) = ts_node.next_sibling() {
                     child_stack.push(Vec::with_capacity(next_node.child_count()));

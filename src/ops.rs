@@ -1,18 +1,19 @@
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
+    string::ToString,
 };
 
 use serde::Serialize;
 
 use crate::{
     checker::Checker,
-    dump_ops::*,
+    dump_ops::dump_ops,
     getter::Getter,
     halstead::{Halstead, HalsteadMaps},
     node::Node,
     spaces::SpaceKind,
-    traits::*,
+    traits::{Callback, ParserTrait},
 };
 
 /// All operands and operators of a space.
@@ -50,7 +51,7 @@ impl Ops {
             _ => (node.start_row() + 1, node.end_row() + 1),
         };
         Self {
-            name: T::get_func_space_name(node, code).map(|name| name.to_string()),
+            name: T::get_func_space_name(node, code).map(ToString::to_string),
             spaces: Vec::new(),
             kind,
             start_line: start_position,
@@ -253,12 +254,12 @@ pub fn operands_and_operators<'a, T: ParserTrait>(parser: &'a T, path: &'a Path)
         // Compute operators and operands from halstead maps
         compute_operators_and_operands::<T>(&mut root_state);
 
-        root_state.ops.name = path.to_str().map(|name| name.to_string());
+        root_state.ops.name = path.to_str().map(ToString::to_string);
         return Some(root_state.ops);
     }
 
     state_stack.pop().map(|mut state| {
-        state.ops.name = path.to_str().map(|name| name.to_string());
+        state.ops.name = path.to_str().map(ToString::to_string);
         state.ops
     })
 }

@@ -21,6 +21,7 @@ impl Default for ParserRegistry {
 
 impl ParserRegistry {
     /// Create a new empty parser registry.
+    #[must_use]
     pub fn new() -> Self {
         Self {
             parsers: HashMap::new(),
@@ -29,6 +30,7 @@ impl ParserRegistry {
 
     /// Create a new parser registry with all built-in parsers registered.
     #[allow(dead_code)]
+    #[must_use]
     pub fn with_builtins() -> Self {
         let mut registry = Self::new();
         registry.register_builtin_parsers();
@@ -62,11 +64,16 @@ impl ParserRegistry {
     }
 
     /// Get a parser factory for the specified language.
+    #[must_use]
     pub fn get_factory(&self, language: &LANG) -> Option<&dyn ParserFactory> {
-        self.parsers.get(language).map(|boxed| boxed.as_ref())
+        self.parsers.get(language).map(std::convert::AsRef::as_ref)
     }
 
     /// Create a parser for the given code and language.
+    ///
+    /// # Errors
+    /// Returns an error if the language has no registered parser or if parser
+    /// initialization fails.
     pub fn create_parser(
         &self,
         language: &LANG,
@@ -81,6 +88,7 @@ impl ParserRegistry {
     }
 
     /// Detect language from file extension.
+    #[must_use]
     pub fn detect_language_from_path(&self, path: &Path) -> Option<LANG> {
         let extension = path.extension()?.to_str()?;
 
@@ -95,8 +103,9 @@ impl ParserRegistry {
     }
 
     /// Get all supported languages.
+    #[must_use]
     pub fn supported_languages(&self) -> Vec<LANG> {
-        self.parsers.keys().cloned().collect()
+        self.parsers.keys().copied().collect()
     }
 
     /// Register all built-in parsers.
@@ -148,6 +157,10 @@ impl ParserRegistry {
 /// Trait for parser factories that can create parsers for specific languages.
 pub trait ParserFactory: Send + Sync {
     /// Create a parser instance for the given code and path.
+    ///
+    /// # Errors
+    /// Returns an error if the parser backend fails to initialize or if the
+    /// underlying language does not support the provided inputs.
     fn create_parser(
         &self,
         code: Vec<u8>,
@@ -238,7 +251,8 @@ impl<
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::ParserRegistry;
+    use crate::LANG;
     use std::path::PathBuf;
 
     #[test]

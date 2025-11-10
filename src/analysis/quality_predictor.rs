@@ -13,6 +13,7 @@ use crate::langs::LANG;
 ///
 /// # Returns
 /// * Quality prediction with confidence score
+#[must_use]
 #[inline]
 pub fn predict_language_quality(code_features: &CodeFeatures, language: LANG) -> QualityPrediction {
     let baseline = get_language_baseline(language);
@@ -30,6 +31,7 @@ pub fn predict_language_quality(code_features: &CodeFeatures, language: LANG) ->
 }
 
 /// Calculate predicted quality score based on code features
+#[must_use]
 #[inline]
 pub fn calculate_predicted_quality(
     features: &CodeFeatures,
@@ -93,6 +95,7 @@ pub fn calculate_predicted_quality(
 }
 
 /// Calculate confidence score for quality prediction
+#[must_use]
 #[inline]
 pub fn calculate_confidence(features: &CodeFeatures) -> f64 {
     let mut confidence = 0.7_f64; // Base confidence
@@ -110,10 +113,11 @@ pub fn calculate_confidence(features: &CodeFeatures) -> f64 {
         confidence += 0.05;
     }
 
-    confidence.min(1.0_f64).max(0.0_f64)
+    confidence.clamp(0.0_f64, 1.0_f64)
 }
 
 /// Identify risk factors that could affect quality
+#[must_use]
 #[inline]
 pub fn identify_risk_factors(
     features: &CodeFeatures,
@@ -165,6 +169,7 @@ pub fn identify_risk_factors(
 }
 
 /// Generate improvement suggestions based on code features
+#[must_use]
 #[inline]
 pub fn generate_improvement_suggestions(
     features: &CodeFeatures,
@@ -196,6 +201,7 @@ pub fn generate_improvement_suggestions(
 }
 
 /// Extract code features from specification
+#[must_use]
 #[inline]
 pub fn extract_features_from_spec(spec: &CodeSpecification, language: LANG) -> CodeFeatures {
     let mut features = CodeFeatures {
@@ -236,6 +242,7 @@ pub fn extract_features_from_spec(spec: &CodeSpecification, language: LANG) -> C
 }
 
 /// Calculate improvement score between two quality scores
+#[must_use]
 #[inline]
 pub fn calculate_quality_improvement_score(before: &QualityScore, after: &QualityScore) -> f64 {
     let maintainability_improvement = (after.maintainability - before.maintainability) / 100.0;

@@ -1,5 +1,11 @@
 // Code generated; DO NOT EDIT.
 
+#![allow(
+    clippy::match_same_arms,
+    clippy::match_wildcard_for_single_variants,
+    clippy::too_many_lines
+)]
+
 use num_derive::FromPrimitive;
 
 #[derive(Clone, Debug, PartialEq, Eq, FromPrimitive)]
@@ -297,7 +303,7 @@ pub enum Kotlin {
 }
 
 impl From<Kotlin> for &'static str {
-    #[inline(always)]
+    #[inline]
     fn from(tok: Kotlin) -> Self {
         match tok {
             Kotlin::End => "end",
@@ -595,21 +601,21 @@ impl From<Kotlin> for &'static str {
 }
 
 impl From<u16> for Kotlin {
-    #[inline(always)]
+    #[inline]
     fn from(x: u16) -> Self {
         num::FromPrimitive::from_u16(x).unwrap_or(Self::Error)
     }
 }
 
 impl PartialEq<u16> for Kotlin {
-    #[inline(always)]
+    #[inline]
     fn eq(&self, x: &u16) -> bool {
         *self == Into::<Self>::into(*x)
     }
 }
 
 impl PartialEq<Kotlin> for u16 {
-    #[inline(always)]
+    #[inline]
     fn eq(&self, x: &Kotlin) -> bool {
         *x == *self
     }

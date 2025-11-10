@@ -5,7 +5,19 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, macros::implement_metric_trait, *};
+use crate::{
+    checker::Checker, macros::implement_metric_trait, node::Node, traits::Search, CcommentCode,
+    CppCode, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode, JavaCode, JavascriptCode,
+    KotlinCode, LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode, TsxCode, TypescriptCode,
+};
+
+#[inline]
+fn usize_to_f64(value: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f64
+    }
+}
 
 /// The `NArgs` metric.
 ///
@@ -94,43 +106,50 @@ impl Stats {
 
     /// Returns the number of function arguments in a space.
     #[inline]
+    #[must_use]
     pub fn fn_args(&self) -> f64 {
-        self.fn_nargs as f64
+        usize_to_f64(self.fn_nargs)
     }
 
     /// Returns the number of closure arguments in a space.
     #[inline]
+    #[must_use]
     pub fn closure_args(&self) -> f64 {
-        self.closure_nargs as f64
+        usize_to_f64(self.closure_nargs)
     }
 
     /// Returns the number of function arguments sum in a space.
     #[inline]
+    #[must_use]
     pub fn fn_args_sum(&self) -> f64 {
-        self.fn_nargs_sum as f64
+        usize_to_f64(self.fn_nargs_sum)
     }
 
     /// Returns the number of closure arguments sum in a space.
     #[inline]
+    #[must_use]
     pub fn closure_args_sum(&self) -> f64 {
-        self.closure_nargs_sum as f64
+        usize_to_f64(self.closure_nargs_sum)
     }
 
     /// Returns the average number of functions arguments in a space.
     #[inline]
+    #[must_use]
     pub fn fn_args_average(&self) -> f64 {
-        self.fn_nargs_sum as f64 / self.total_functions.max(1) as f64
+        usize_to_f64(self.fn_nargs_sum) / usize_to_f64(self.total_functions.max(1))
     }
 
     /// Returns the average number of closures arguments in a space.
     #[inline]
+    #[must_use]
     pub fn closure_args_average(&self) -> f64 {
-        self.closure_nargs_sum as f64 / self.total_closures.max(1) as f64
+        usize_to_f64(self.closure_nargs_sum) / usize_to_f64(self.total_closures.max(1))
     }
 
     /// Returns the total number of arguments of each function and
     /// closure in a space.
     #[inline]
+    #[must_use]
     pub fn nargs_total(&self) -> f64 {
         self.fn_args_sum() + self.closure_args_sum()
     }
@@ -140,28 +159,33 @@ impl Stats {
     /// This value is computed dividing the `NArgs` value
     /// for the total number of functions/closures in a space.
     #[inline]
+    #[must_use]
     pub fn nargs_average(&self) -> f64 {
-        self.nargs_total() / (self.total_functions + self.total_closures).max(1) as f64
+        self.nargs_total() / usize_to_f64((self.total_functions + self.total_closures).max(1))
     }
     /// Returns the minimum number of function arguments in a space.
     #[inline]
+    #[must_use]
     pub fn fn_args_min(&self) -> f64 {
-        self.fn_nargs_min as f64
+        usize_to_f64(self.fn_nargs_min)
     }
     /// Returns the maximum number of function arguments in a space.
     #[inline]
+    #[must_use]
     pub fn fn_args_max(&self) -> f64 {
-        self.fn_nargs_max as f64
+        usize_to_f64(self.fn_nargs_max)
     }
     /// Returns the minimum number of closure arguments in a space.
     #[inline]
+    #[must_use]
     pub fn closure_args_min(&self) -> f64 {
-        self.closure_nargs_min as f64
+        usize_to_f64(self.closure_nargs_min)
     }
     /// Returns the maximum number of closure arguments in a space.
     #[inline]
+    #[must_use]
     pub fn closure_args_max(&self) -> f64 {
-        self.closure_nargs_max as f64
+        usize_to_f64(self.closure_nargs_max)
     }
     #[inline]
     pub(crate) fn compute_sum(&mut self) {
@@ -254,8 +278,10 @@ implement_metric_trait!(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{
+        tools::check_metrics, CppParser, CsharpParser, GoParser, JavaParser, JavascriptParser,
+        KotlinParser, LuaParser, ParserEngineRust, PythonParser, TypescriptParser,
+    };
 
     #[test]
     fn python_no_functions_and_closures() {

@@ -11,6 +11,10 @@ use crate::{
 ///
 /// Returns a [`Result`] value, when an error occurs.
 ///
+/// # Errors
+///
+/// Returns an error if writing to stdout fails.
+///
 /// # Examples
 ///
 /// ```

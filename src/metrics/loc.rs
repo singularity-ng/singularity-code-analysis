@@ -5,9 +5,25 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, macros::implement_metric_trait, *};
+use crate::{
+    checker::Checker, language_cpp::Cpp, language_java::Java, language_javascript::Javascript,
+    language_mozjs::Mozjs, language_python::Python, language_rust::Rust, language_tsx::Tsx,
+    language_typescript::Typescript, macros::implement_metric_trait, node::Node, CcommentCode,
+    CppCode, CppParser, CsharpCode, ElixirCode, ErlangCode, GleamCode, GoCode, JavaCode,
+    JavaParser, JavascriptCode, KotlinCode, LuaCode, MozjsCode, PreprocCode, PythonCode, RustCode,
+    TsxCode, TypescriptCode,
+};
+
+#[inline]
+fn usize_to_f64(value: usize) -> f64 {
+    #[allow(clippy::cast_precision_loss)]
+    {
+        value as f64
+    }
+}
 
 /// The `SLoc` metric suite.
+#[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone)]
 pub struct Sloc {
     start: usize,
@@ -34,50 +50,57 @@ impl Default for Sloc {
 
 impl Sloc {
     #[inline]
-    pub fn sloc(&self) -> f64 {
-        // This metric counts the number of lines in a file
-        // The if construct is needed to count the line of code that represents
-        // the function signature in a function space
-        let sloc = if self.unit {
+    fn current_lines(&self) -> usize {
+        if self.unit {
             self.end - self.start
         } else {
             (self.end - self.start) + 1
-        };
-        sloc as f64
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn sloc(&self) -> f64 {
+        usize_to_f64(self.current_lines())
     }
 
     /// The `Sloc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn sloc_min(&self) -> f64 {
-        self.sloc_min as f64
+        usize_to_f64(self.sloc_min)
     }
 
     /// The `Sloc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn sloc_max(&self) -> f64 {
-        self.sloc_max as f64
+        usize_to_f64(self.sloc_max)
     }
 
     #[inline]
     pub fn merge(&mut self, other: &Sloc) {
+        let other_sloc = other.current_lines();
         // Accumulate SLOC sum across scopes for accurate averaging
-        self.sloc_sum += other.sloc() as usize;
-        self.sloc_min = self.sloc_min.min(other.sloc() as usize);
-        self.sloc_max = self.sloc_max.max(other.sloc() as usize);
+        self.sloc_sum += other_sloc;
+        self.sloc_min = self.sloc_min.min(other_sloc);
+        self.sloc_max = self.sloc_max.max(other_sloc);
     }
 
     #[inline]
     pub(crate) fn compute_minmax(&mut self) {
         if self.sloc_min == usize::MAX {
-            self.sloc_min = self.sloc_min.min(self.sloc() as usize);
-            self.sloc_max = self.sloc_max.max(self.sloc() as usize);
+            let current = self.current_lines();
+            self.sloc_min = self.sloc_min.min(current);
+            self.sloc_max = self.sloc_max.max(current);
             // Initialize sum for single-scope instances
-            self.sloc_sum = self.sloc() as usize;
+            self.sloc_sum = current;
         }
     }
 }
 
 /// The `PLoc` metric suite.
+#[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone)]
 pub struct Ploc {
     lines: HashSet<usize>,
@@ -97,45 +120,56 @@ impl Default for Ploc {
 
 impl Ploc {
     #[inline]
+    fn line_count(&self) -> usize {
+        self.lines.len()
+    }
+
+    #[inline]
+    #[must_use]
     pub fn ploc(&self) -> f64 {
         // This metric counts the number of instruction lines in a code
         // https://en.wikipedia.org/wiki/Source_lines_of_code
-        self.lines.len() as f64
+        usize_to_f64(self.line_count())
     }
 
     /// The `Ploc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn ploc_min(&self) -> f64 {
-        self.ploc_min as f64
+        usize_to_f64(self.ploc_min)
     }
 
     /// The `Ploc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn ploc_max(&self) -> f64 {
-        self.ploc_max as f64
+        usize_to_f64(self.ploc_max)
     }
 
     #[inline]
     pub fn merge(&mut self, other: &Ploc) {
         // Merge ploc lines
-        for l in other.lines.iter() {
-            self.lines.insert(*l);
+        for &line in &other.lines {
+            self.lines.insert(line);
         }
 
-        self.ploc_min = self.ploc_min.min(other.ploc() as usize);
-        self.ploc_max = self.ploc_max.max(other.ploc() as usize);
+        let other_ploc = other.line_count();
+        self.ploc_min = self.ploc_min.min(other_ploc);
+        self.ploc_max = self.ploc_max.max(other_ploc);
     }
 
     #[inline]
     pub(crate) fn compute_minmax(&mut self) {
         if self.ploc_min == usize::MAX {
-            self.ploc_min = self.ploc_min.min(self.ploc() as usize);
-            self.ploc_max = self.ploc_max.max(self.ploc() as usize);
+            let current = self.line_count();
+            self.ploc_min = self.ploc_min.min(current);
+            self.ploc_max = self.ploc_max.max(current);
         }
     }
 }
 
 /// The `CLoc` metric suite.
+#[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone)]
 pub struct Cloc {
     only_comment_lines: usize,
@@ -159,22 +193,30 @@ impl Default for Cloc {
 
 impl Cloc {
     #[inline]
+    fn total_comment_lines(&self) -> usize {
+        self.only_comment_lines + self.code_comment_lines
+    }
+
+    #[inline]
+    #[must_use]
     pub fn cloc(&self) -> f64 {
         // Comments are counted regardless of their placement
         // https://en.wikipedia.org/wiki/Source_lines_of_code
-        (self.only_comment_lines + self.code_comment_lines) as f64
+        usize_to_f64(self.total_comment_lines())
     }
 
     /// The `Ploc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn cloc_min(&self) -> f64 {
-        self.cloc_min as f64
+        usize_to_f64(self.cloc_min)
     }
 
     /// The `Ploc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn cloc_max(&self) -> f64 {
-        self.cloc_max as f64
+        usize_to_f64(self.cloc_max)
     }
 
     #[inline]
@@ -183,20 +225,23 @@ impl Cloc {
         self.only_comment_lines += other.only_comment_lines;
         self.code_comment_lines += other.code_comment_lines;
 
-        self.cloc_min = self.cloc_min.min(other.cloc() as usize);
-        self.cloc_max = self.cloc_max.max(other.cloc() as usize);
+        let other_cloc = other.total_comment_lines();
+        self.cloc_min = self.cloc_min.min(other_cloc);
+        self.cloc_max = self.cloc_max.max(other_cloc);
     }
 
     #[inline]
     pub(crate) fn compute_minmax(&mut self) {
         if self.cloc_min == usize::MAX {
-            self.cloc_min = self.cloc_min.min(self.cloc() as usize);
-            self.cloc_max = self.cloc_max.max(self.cloc() as usize);
+            let current = self.total_comment_lines();
+            self.cloc_min = self.cloc_min.min(current);
+            self.cloc_max = self.cloc_max.max(current);
         }
     }
 }
 
 /// The `LLoc` metric suite.
+#[allow(clippy::struct_field_names)]
 #[derive(Debug, Clone)]
 pub struct Lloc {
     logical_lines: usize,
@@ -216,37 +261,47 @@ impl Default for Lloc {
 
 impl Lloc {
     #[inline]
+    fn line_count(&self) -> usize {
+        self.logical_lines
+    }
+
+    #[inline]
+    #[must_use]
     pub fn lloc(&self) -> f64 {
         // This metric counts the number of statements in a code
         // https://en.wikipedia.org/wiki/Source_lines_of_code
-        self.logical_lines as f64
+        usize_to_f64(self.line_count())
     }
 
     /// The `Lloc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn lloc_min(&self) -> f64 {
-        self.lloc_min as f64
+        usize_to_f64(self.lloc_min)
     }
 
     /// The `Lloc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn lloc_max(&self) -> f64 {
-        self.lloc_max as f64
+        usize_to_f64(self.lloc_max)
     }
 
     #[inline]
     pub fn merge(&mut self, other: &Lloc) {
         // Merge lloc lines
         self.logical_lines += other.logical_lines;
-        self.lloc_min = self.lloc_min.min(other.lloc() as usize);
-        self.lloc_max = self.lloc_max.max(other.lloc() as usize);
+        let other_lloc = other.line_count();
+        self.lloc_min = self.lloc_min.min(other_lloc);
+        self.lloc_max = self.lloc_max.max(other_lloc);
     }
 
     #[inline]
     pub(crate) fn compute_minmax(&mut self) {
         if self.lloc_min == usize::MAX {
-            self.lloc_min = self.lloc_min.min(self.lloc() as usize);
-            self.lloc_max = self.lloc_max.max(self.lloc() as usize);
+            let current = self.line_count();
+            self.lloc_min = self.lloc_min.min(current);
+            self.lloc_max = self.lloc_max.max(current);
         }
     }
 }
@@ -337,6 +392,19 @@ impl fmt::Display for Stats {
 }
 
 impl Stats {
+    #[inline]
+    fn space_count_as_f64(&self) -> f64 {
+        usize_to_f64(self.space_count.max(1))
+    }
+
+    #[inline]
+    fn blank_lines(&self) -> usize {
+        let sloc = self.sloc.current_lines();
+        let ploc = self.ploc.line_count();
+        let comment = self.cloc.only_comment_lines;
+        sloc.saturating_sub(ploc).saturating_sub(comment)
+    }
+
     /// Merges a second `Loc` metric suite into the first one
     pub fn merge(&mut self, other: &Stats) {
         self.sloc.merge(&other.sloc);
@@ -349,14 +417,15 @@ impl Stats {
 
         // min and max
 
-        self.blank_min = self.blank_min.min(other.blank() as usize);
-        self.blank_max = self.blank_max.max(other.blank() as usize);
+        self.blank_min = self.blank_min.min(other.blank_lines());
+        self.blank_max = self.blank_max.max(other.blank_lines());
     }
 
     /// The `Sloc` metric.
     ///
     /// Counts the number of lines in a scope
     #[inline]
+    #[must_use]
     pub fn sloc(&self) -> f64 {
         self.sloc.sloc()
     }
@@ -365,6 +434,7 @@ impl Stats {
     ///
     /// Counts the number of instruction lines in a scope
     #[inline]
+    #[must_use]
     pub fn ploc(&self) -> f64 {
         self.ploc.ploc()
     }
@@ -373,6 +443,7 @@ impl Stats {
     ///
     /// Counts the number of statements in a scope
     #[inline]
+    #[must_use]
     pub fn lloc(&self) -> f64 {
         self.lloc.lloc()
     }
@@ -381,6 +452,7 @@ impl Stats {
     ///
     /// Counts the number of comments in a scope
     #[inline]
+    #[must_use]
     pub fn cloc(&self) -> f64 {
         self.cloc.cloc()
     }
@@ -389,108 +461,124 @@ impl Stats {
     ///
     /// Counts the number of blank lines in a scope.
     #[inline]
+    #[must_use]
     pub fn blank(&self) -> f64 {
-        (self.sloc() - self.ploc() - self.cloc.only_comment_lines as f64).max(0.0)
+        usize_to_f64(self.blank_lines())
     }
 
     /// The `Sloc` metric average value.
     ///
     /// This value is computed dividing the accumulated `Sloc` sum by the number of spaces.
     #[inline]
+    #[must_use]
     pub fn sloc_average(&self) -> f64 {
-        self.sloc.sloc_sum as f64 / self.space_count as f64
+        usize_to_f64(self.sloc.sloc_sum) / self.space_count_as_f64()
     }
 
     /// The `Ploc` metric average value.
     ///
     /// This value is computed dividing the `Ploc` value for the number of spaces
     #[inline]
+    #[must_use]
     pub fn ploc_average(&self) -> f64 {
-        self.ploc() / self.space_count as f64
+        self.ploc() / self.space_count_as_f64()
     }
 
     /// The `Lloc` metric average value.
     ///
     /// This value is computed dividing the `Lloc` value for the number of spaces
     #[inline]
+    #[must_use]
     pub fn lloc_average(&self) -> f64 {
-        self.lloc() / self.space_count as f64
+        self.lloc() / self.space_count_as_f64()
     }
 
     /// The `Cloc` metric average value.
     ///
     /// This value is computed dividing the `Cloc` value for the number of spaces
     #[inline]
+    #[must_use]
     pub fn cloc_average(&self) -> f64 {
-        self.cloc() / self.space_count as f64
+        self.cloc() / self.space_count_as_f64()
     }
 
     /// The `Blank` metric average value.
     ///
     /// This value is computed dividing the `Blank` value for the number of spaces
     #[inline]
+    #[must_use]
     pub fn blank_average(&self) -> f64 {
-        self.blank() / self.space_count as f64
+        self.blank() / self.space_count_as_f64()
     }
 
     /// The `Sloc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn sloc_min(&self) -> f64 {
         self.sloc.sloc_min()
     }
 
     /// The `Sloc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn sloc_max(&self) -> f64 {
         self.sloc.sloc_max()
     }
 
     /// The `Cloc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn cloc_min(&self) -> f64 {
         self.cloc.cloc_min()
     }
 
     /// The `Cloc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn cloc_max(&self) -> f64 {
         self.cloc.cloc_max()
     }
 
     /// The `Ploc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn ploc_min(&self) -> f64 {
         self.ploc.ploc_min()
     }
 
     /// The `Ploc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn ploc_max(&self) -> f64 {
         self.ploc.ploc_max()
     }
 
     /// The `Lloc` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn lloc_min(&self) -> f64 {
         self.lloc.lloc_min()
     }
 
     /// The `Lloc` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn lloc_max(&self) -> f64 {
         self.lloc.lloc_max()
     }
 
     /// The `Blank` metric minimum value.
     #[inline]
+    #[must_use]
     pub fn blank_min(&self) -> f64 {
-        self.blank_min as f64
+        usize_to_f64(self.blank_min)
     }
 
     /// The `Blank` metric maximum value.
     #[inline]
+    #[must_use]
     pub fn blank_max(&self) -> f64 {
-        self.blank_max as f64
+        usize_to_f64(self.blank_max)
     }
 
     #[inline]
@@ -501,8 +589,9 @@ impl Stats {
         self.lloc.compute_minmax();
 
         if self.blank_min == usize::MAX {
-            self.blank_min = self.blank_min.min(self.blank() as usize);
-            self.blank_max = self.blank_max.max(self.blank() as usize);
+            let blank = self.blank_lines();
+            self.blank_min = self.blank_min.min(blank);
+            self.blank_max = self.blank_max.max(blank);
         }
     }
 }
@@ -577,6 +666,7 @@ fn record_code_line(stats: &mut Stats, start: usize) {
 }
 
 impl Loc for PythonCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Python::*;
 
@@ -629,6 +719,7 @@ impl Loc for PythonCode {
 }
 
 impl Loc for MozjsCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Mozjs::*;
 
@@ -671,6 +762,7 @@ impl Loc for MozjsCode {
 }
 
 impl Loc for JavascriptCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Javascript::*;
 
@@ -713,6 +805,7 @@ impl Loc for JavascriptCode {
 }
 
 impl Loc for TypescriptCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Typescript::*;
 
@@ -760,6 +853,7 @@ impl Loc for TypescriptCode {
 }
 
 impl Loc for TsxCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Tsx::*;
 
@@ -806,6 +900,7 @@ impl Loc for TsxCode {
 }
 
 impl Loc for RustCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Rust::*;
 
@@ -856,6 +951,7 @@ impl Loc for RustCode {
 }
 
 impl Loc for CppCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Cpp::*;
 
@@ -905,6 +1001,7 @@ impl Loc for CppCode {
 }
 
 impl Loc for JavaCode {
+    #[allow(clippy::enum_glob_use)]
     fn compute(node: &Node, stats: &mut Stats, is_func_space: bool, is_unit: bool) {
         use Java::*;
 
@@ -1023,8 +1120,7 @@ impl Loc for KotlinCode {
         let (start, end) = init(node, stats, is_func_space, is_unit);
 
         match node.kind() {
-            "line_comment" | "block_comment" => add_cloc_lines(stats, start, end),
-            "shebang" => add_cloc_lines(stats, start, end),
+            "line_comment" | "block_comment" | "shebang" => add_cloc_lines(stats, start, end),
             "source_file"
             | "class_body"
             | "function_body"
@@ -1055,8 +1151,10 @@ implement_metric_trait!(Loc, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{
+        tools::check_metrics, CppParser, CsharpParser, GoParser, JavaParser, JavascriptParser,
+        KotlinParser, LuaParser, MozjsParser, ParserEngineRust, PythonParser,
+    };
 
     #[test]
     fn python_sloc() {

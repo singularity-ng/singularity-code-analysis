@@ -5,14 +5,20 @@ use serde::{
     Serialize,
 };
 
-use crate::{checker::Checker, macros::implement_metric_trait, *};
+use crate::{
+    analysis_context::node_text_equals_any, checker::Checker, macros::implement_metric_trait,
+    node::Node, CcommentCode, Cpp, CppCode, CsharpCode, Elixir, ElixirCode, Erlang, ErlangCode,
+    Gleam, GleamCode, GoCode, Java, JavaCode, Javascript, JavascriptCode, KotlinCode, LuaCode,
+    Mozjs, MozjsCode, PreprocCode, Python, PythonCode, Rust, RustCode, Tsx, TsxCode, Typescript,
+    TypescriptCode,
+};
 
 /// The `Cyclomatic` metric.
 #[derive(Debug, Clone)]
 pub struct Stats {
     cyclomatic_sum: f64,
     cyclomatic: f64,
-    n: usize,
+    n: f64,
     cyclomatic_max: f64,
     cyclomatic_min: f64,
 }
@@ -22,7 +28,7 @@ impl Default for Stats {
         Self {
             cyclomatic_sum: 0.,
             cyclomatic: 1.,
-            n: 1,
+            n: 1.0,
             cyclomatic_max: 0.,
             cyclomatic_min: f64::MAX,
         }
@@ -68,10 +74,12 @@ impl Stats {
     }
 
     /// Returns the `Cyclomatic` metric value
+    #[must_use]
     pub fn cyclomatic(&self) -> f64 {
         self.cyclomatic
     }
     /// Returns the sum
+    #[must_use]
     pub fn cyclomatic_sum(&self) -> f64 {
         self.cyclomatic_sum
     }
@@ -80,14 +88,17 @@ impl Stats {
     ///
     /// This value is computed dividing the `Cyclomatic` value for the
     /// number of spaces.
+    #[must_use]
     pub fn cyclomatic_average(&self) -> f64 {
-        self.cyclomatic_sum() / self.n as f64
+        self.cyclomatic_sum() / self.n
     }
     /// Returns the `Cyclomatic` maximum value
+    #[must_use]
     pub fn cyclomatic_max(&self) -> f64 {
         self.cyclomatic_max
     }
     /// Returns the `Cyclomatic` minimum value
+    #[must_use]
     pub fn cyclomatic_min(&self) -> f64 {
         self.cyclomatic_min
     }
@@ -112,16 +123,27 @@ where
 
 impl Cyclomatic for PythonCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Python::*;
-
         match node.kind_id().into() {
-            If | Elif | For | While | Except | With | Assert | And | Or => {
+            Python::If
+            | Python::Elif
+            | Python::For
+            | Python::While
+            | Python::Except
+            | Python::With
+            | Python::Assert
+            | Python::And
+            | Python::Or => {
                 stats.cyclomatic += 1.;
             }
-            Else => {
+            Python::Else => {
                 if node.has_ancestors(
-                    |node| matches!(node.kind_id().into(), ForStatement | WhileStatement),
-                    |node| node.kind_id() == ElseClause,
+                    |node| {
+                        matches!(
+                            node.kind_id().into(),
+                            Python::ForStatement | Python::WhileStatement
+                        )
+                    },
+                    |node| node.kind_id() == Python::ElseClause,
                 ) {
                     stats.cyclomatic += 1.;
                 }
@@ -133,10 +155,15 @@ impl Cyclomatic for PythonCode {
 
 impl Cyclomatic for MozjsCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Mozjs::*;
-
         match node.kind_id().into() {
-            If | For | While | Case | Catch | TernaryExpression | AMPAMP | PIPEPIPE => {
+            Mozjs::If
+            | Mozjs::For
+            | Mozjs::While
+            | Mozjs::Case
+            | Mozjs::Catch
+            | Mozjs::TernaryExpression
+            | Mozjs::AMPAMP
+            | Mozjs::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -146,10 +173,15 @@ impl Cyclomatic for MozjsCode {
 
 impl Cyclomatic for JavascriptCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Javascript::*;
-
         match node.kind_id().into() {
-            If | For | While | Case | Catch | TernaryExpression | AMPAMP | PIPEPIPE => {
+            Javascript::If
+            | Javascript::For
+            | Javascript::While
+            | Javascript::Case
+            | Javascript::Catch
+            | Javascript::TernaryExpression
+            | Javascript::AMPAMP
+            | Javascript::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -159,10 +191,15 @@ impl Cyclomatic for JavascriptCode {
 
 impl Cyclomatic for TypescriptCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Typescript::*;
-
         match node.kind_id().into() {
-            If | For | While | Case | Catch | TernaryExpression | AMPAMP | PIPEPIPE => {
+            Typescript::If
+            | Typescript::For
+            | Typescript::While
+            | Typescript::Case
+            | Typescript::Catch
+            | Typescript::TernaryExpression
+            | Typescript::AMPAMP
+            | Typescript::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -172,10 +209,15 @@ impl Cyclomatic for TypescriptCode {
 
 impl Cyclomatic for TsxCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Tsx::*;
-
         match node.kind_id().into() {
-            If | For | While | Case | Catch | TernaryExpression | AMPAMP | PIPEPIPE => {
+            Tsx::If
+            | Tsx::For
+            | Tsx::While
+            | Tsx::Case
+            | Tsx::Catch
+            | Tsx::TernaryExpression
+            | Tsx::AMPAMP
+            | Tsx::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -185,10 +227,16 @@ impl Cyclomatic for TsxCode {
 
 impl Cyclomatic for RustCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Rust::*;
-
         match node.kind_id().into() {
-            If | For | While | Loop | MatchArm | MatchArm2 | TryExpression | AMPAMP | PIPEPIPE => {
+            Rust::If
+            | Rust::For
+            | Rust::While
+            | Rust::Loop
+            | Rust::MatchArm
+            | Rust::MatchArm2
+            | Rust::TryExpression
+            | Rust::AMPAMP
+            | Rust::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -198,10 +246,15 @@ impl Cyclomatic for RustCode {
 
 impl Cyclomatic for CppCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Cpp::*;
-
         match node.kind_id().into() {
-            If | For | While | Case | Catch | ConditionalExpression | AMPAMP | PIPEPIPE => {
+            Cpp::If
+            | Cpp::For
+            | Cpp::While
+            | Cpp::Case
+            | Cpp::Catch
+            | Cpp::ConditionalExpression
+            | Cpp::AMPAMP
+            | Cpp::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -211,12 +264,10 @@ impl Cyclomatic for CppCode {
 
 impl Cyclomatic for ElixirCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Elixir::*;
-
         match node.kind_id().into() {
-            Call => {
+            Elixir::Call => {
                 if let Some(identifier) = node.child(0) {
-                    if identifier.kind_id() == Identifier
+                    if identifier.kind_id() == Elixir::Identifier
                         && node_text_equals_any(
                             &identifier,
                             &[
@@ -228,7 +279,7 @@ impl Cyclomatic for ElixirCode {
                     }
                 }
             }
-            StabClause | ElseBlock => {
+            Elixir::StabClause | Elixir::ElseBlock => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -238,16 +289,17 @@ impl Cyclomatic for ElixirCode {
 
 impl Cyclomatic for ErlangCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Erlang::*;
-
         match node.kind_id().into() {
-            IfExpr | CaseExpr | ReceiveExpr | TryExpr | TryAfter => {
+            Erlang::IfExpr
+            | Erlang::CaseExpr
+            | Erlang::ReceiveExpr
+            | Erlang::TryExpr
+            | Erlang::TryAfter
+            | Erlang::GuardClause
+            | Erlang::CrClause => {
                 stats.cyclomatic += 1.;
             }
-            GuardClause | CrClause => {
-                stats.cyclomatic += 1.;
-            }
-            FunctionClause => {
+            Erlang::FunctionClause => {
                 if let Some(prev) = node.previous_named_sibling() {
                     if Into::<Erlang>::into(prev.kind_id()) == Erlang::FunctionClause {
                         stats.cyclomatic += 1.;
@@ -261,13 +313,11 @@ impl Cyclomatic for ErlangCode {
 
 impl Cyclomatic for GleamCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Gleam::*;
-
         match node.kind_id().into() {
-            Case => {
+            Gleam::Case => {
                 stats.cyclomatic += 1.;
             }
-            CaseClause => {
+            Gleam::CaseClause => {
                 if let Some(prev) = node.previous_named_sibling() {
                     if Into::<Gleam>::into(prev.kind_id()) == Gleam::CaseClause {
                         stats.cyclomatic += 1.;
@@ -281,10 +331,15 @@ impl Cyclomatic for GleamCode {
 
 impl Cyclomatic for JavaCode {
     fn compute(node: &Node, stats: &mut Stats) {
-        use Java::*;
-
         match node.kind_id().into() {
-            If | For | While | Case | Catch | TernaryExpression | AMPAMP | PIPEPIPE => {
+            Java::If
+            | Java::For
+            | Java::While
+            | Java::Case
+            | Java::Catch
+            | Java::TernaryExpression
+            | Java::AMPAMP
+            | Java::PIPEPIPE => {
                 stats.cyclomatic += 1.;
             }
             _ => {}
@@ -401,8 +456,10 @@ implement_metric_trait!(Cyclomatic, PreprocCode, CcommentCode);
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::tools::check_metrics;
+    use crate::{
+        tools::check_metrics, CppParser, CsharpParser, GoParser, JavaParser, KotlinParser,
+        LuaParser, ParserEngineRust, PythonParser,
+    };
 
     #[test]
     fn python_simple_function() {

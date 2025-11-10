@@ -260,12 +260,12 @@ fn get_nesting_from_map(
 fn increment_function_depth<T: std::cmp::PartialEq + std::convert::From<u16>>(
     depth: &mut usize,
     node: &Node,
-    stop: T,
+    stop: &T,
 ) {
     // Increase depth function nesting if needed
     let mut child = *node;
     while let Some(parent) = child.parent() {
-        if stop == parent.kind_id().into() {
+        if stop == &parent.kind_id().into() {
             *depth += 1;
             break;
         }
@@ -295,65 +295,69 @@ impl Cognitive for PythonCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Python::*;
-
         // Get nesting of the parent
         let (mut nesting, mut depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            IfStatement | ForStatement | WhileStatement | ConditionalExpression => {
+            Python::IfStatement
+            | Python::ForStatement
+            | Python::WhileStatement
+            | Python::ConditionalExpression => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
-            ElifClause => {
+            Python::ElifClause => {
                 // No nesting increment for them because their cost has already
                 // been paid by the if construct
                 increment_by_one(stats);
                 // Reset the boolean sequence
                 stats.boolean_seq.reset();
             }
-            ElseClause | FinallyClause => {
+            Python::ElseClause | Python::FinallyClause => {
                 // No nesting increment for them because their cost has already
                 // been paid by the if construct
                 increment_by_one(stats);
             }
-            ExceptClause => {
+            Python::ExceptClause => {
                 nesting += 1;
                 increment(stats);
             }
-            ExpressionList | ExpressionStatement | Tuple => {
+            Python::ExpressionList | Python::ExpressionStatement | Python::Tuple => {
                 stats.boolean_seq.reset();
             }
-            NotOperator => {
+            Python::NotOperator => {
                 stats.boolean_seq.not_operator(node.kind_id());
             }
-            BooleanOperator => {
+            Python::BooleanOperator => {
                 if node.count_specific_ancestors::<PythonParser>(
-                    |node| node.kind_id() == BooleanOperator,
-                    |node| node.kind_id() == Lambda,
+                    |node| node.kind_id() == Python::BooleanOperator,
+                    |node| node.kind_id() == Python::Lambda,
                 ) == 0
                 {
                     stats.structural += node.count_specific_ancestors::<PythonParser>(
-                        |node| node.kind_id() == Lambda,
+                        |node| node.kind_id() == Python::Lambda,
                         |node| {
                             matches!(
                                 node.kind_id().into(),
-                                ExpressionList | IfStatement | ForStatement | WhileStatement
+                                Python::ExpressionList
+                                    | Python::IfStatement
+                                    | Python::ForStatement
+                                    | Python::WhileStatement
                             )
                         },
                     );
                 }
-                compute_booleans::<language_python::Python>(node, stats, And, Or);
+                compute_booleans::<language_python::Python>(node, stats, Python::And, Python::Or);
             }
-            Lambda => {
+            Python::Lambda => {
                 // Increase lambda nesting
                 lambda += 1;
             }
-            FunctionDefinition => {
+            Python::FunctionDefinition => {
                 // Increase depth function nesting if needed
                 increment_function_depth::<language_python::Python>(
                     &mut depth,
                     node,
-                    FunctionDefinition,
+                    &Python::FunctionDefinition,
                 );
             }
             _ => {}
@@ -369,7 +373,6 @@ impl Cognitive for RustCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Rust::*;
         // LIMITATION: Macro expansion is not analyzed
         // Rust macros can expand to arbitrary code including control flow structures.
         // To properly account for complexity in macros, we would need to:
@@ -379,37 +382,46 @@ impl Cognitive for RustCode {
         let (mut nesting, mut depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            IfExpression => {
+            Rust::IfExpression => {
                 // Check if a node is not an else-if
                 if !Self::is_else_if(node) {
                     increase_nesting(stats,&mut nesting, depth, lambda);
                 }
             }
-            ForExpression | WhileExpression | MatchExpression => {
+            Rust::ForExpression | Rust::WhileExpression | Rust::MatchExpression => {
                 increase_nesting(stats,&mut nesting, depth, lambda);
             }
-            Else /*else-if also */ => {
+            Rust::Else /*else-if also */ => {
                 increment_by_one(stats);
             }
-            BreakExpression | ContinueExpression => {
+            Rust::BreakExpression | Rust::ContinueExpression => {
                 if let Some(label_child) = node.child(1) {
-                    if let Label = label_child.kind_id().into() {
+                    if let Rust::Label = label_child.kind_id().into() {
                         increment_by_one(stats);
                     }
                 }
             }
-            UnaryExpression => {
+            Rust::UnaryExpression => {
                 stats.boolean_seq.not_operator(node.kind_id());
             }
-            BinaryExpression => {
-                compute_booleans::<language_rust::Rust>(node, stats, AMPAMP, PIPEPIPE);
+            Rust::BinaryExpression => {
+                compute_booleans::<language_rust::Rust>(
+                    node,
+                    stats,
+                    Rust::AMPAMP,
+                    Rust::PIPEPIPE,
+                );
             }
-            FunctionItem  => {
+            Rust::FunctionItem => {
                 nesting = 0;
                 // Increase depth function nesting if needed
-                increment_function_depth::<language_rust::Rust>(&mut depth, node, FunctionItem);
+                increment_function_depth::<language_rust::Rust>(
+                    &mut depth,
+                    node,
+                    &Rust::FunctionItem,
+                );
             }
-            ClosureExpression => {
+            Rust::ClosureExpression => {
                 lambda += 1;
             }
             _ => {}
@@ -424,8 +436,6 @@ impl Cognitive for CppCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Cpp::*;
-
         // LIMITATION: Preprocessor macro expansion is not analyzed
         // C/C++ macros can expand to arbitrary code including control flow structures.
         // To properly account for complexity in macros, we would need to:
@@ -435,24 +445,33 @@ impl Cognitive for CppCode {
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            IfStatement => {
+            Cpp::IfStatement => {
                 if !Self::is_else_if(node) {
                     increase_nesting(stats,&mut nesting, depth, lambda);
                 }
             }
-            ForStatement | WhileStatement | DoStatement | SwitchStatement | CatchClause => {
+            Cpp::ForStatement
+            | Cpp::WhileStatement
+            | Cpp::DoStatement
+            | Cpp::SwitchStatement
+            | Cpp::CatchClause => {
                 increase_nesting(stats,&mut nesting, depth, lambda);
             }
-            GotoStatement | Else /* else-if also */ => {
+            Cpp::GotoStatement | Cpp::Else /* else-if also */ => {
                 increment_by_one(stats);
             }
-            UnaryExpression2 => {
+            Cpp::UnaryExpression2 => {
                 stats.boolean_seq.not_operator(node.kind_id());
             }
-            BinaryExpression2 => {
-                compute_booleans::<language_cpp::Cpp>(node, stats, AMPAMP, PIPEPIPE);
+            Cpp::BinaryExpression2 => {
+                compute_booleans::<language_cpp::Cpp>(
+                    node,
+                    stats,
+                    Cpp::AMPAMP,
+                    Cpp::PIPEPIPE,
+                );
             }
-            LambdaExpression => {
+            Cpp::LambdaExpression => {
                 lambda += 1;
             }
             _ => {}
@@ -464,39 +483,44 @@ impl Cognitive for CppCode {
 macro_rules! js_cognitive {
     ($lang:ident) => {
         fn compute(node: &Node, stats: &mut Stats, nesting_map: &mut HashMap<usize, (usize, usize, usize)>) {
-            use $lang::*;
             let (mut nesting, mut depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
             match node.kind_id().into() {
-                IfStatement => {
+                $lang::IfStatement => {
                     if !Self::is_else_if(&node) {
                         increase_nesting(stats,&mut nesting, depth, lambda);
                     }
                 }
-                ForStatement | ForInStatement | WhileStatement | DoStatement | SwitchStatement | CatchClause | TernaryExpression => {
+                $lang::ForStatement
+                | $lang::ForInStatement
+                | $lang::WhileStatement
+                | $lang::DoStatement
+                | $lang::SwitchStatement
+                | $lang::CatchClause
+                | $lang::TernaryExpression => {
                     increase_nesting(stats,&mut nesting, depth, lambda);
                 }
-                Else /* else-if also */ => {
+                $lang::Else /* else-if also */ => {
                     increment_by_one(stats);
                 }
-                ExpressionStatement => {
+                $lang::ExpressionStatement => {
                     // Reset the boolean sequence
                     stats.boolean_seq.reset();
                 }
-                UnaryExpression => {
+                $lang::UnaryExpression => {
                     stats.boolean_seq.not_operator(node.kind_id());
                 }
-                BinaryExpression => {
-                    compute_booleans::<$lang>(node, stats, AMPAMP, PIPEPIPE);
+                $lang::BinaryExpression => {
+                    compute_booleans::<$lang>(node, stats, $lang::AMPAMP, $lang::PIPEPIPE);
                 }
-                FunctionDeclaration => {
+                $lang::FunctionDeclaration => {
                     // Reset lambda nesting at function for JS
                     nesting = 0;
                     lambda = 0;
                     // Increase depth function nesting if needed
-                    increment_function_depth::<$lang>(&mut depth, node, FunctionDeclaration);
+                    increment_function_depth::<$lang>(&mut depth, node, &$lang::FunctionDeclaration);
                 }
-                ArrowFunction => {
+                $lang::ArrowFunction => {
                     lambda += 1;
                 }
                 _ => {}
@@ -528,29 +552,36 @@ impl Cognitive for JavaCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Java::*;
-
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            IfStatement => {
+            Java::IfStatement => {
                 if !Self::is_else_if(node) {
                     increase_nesting(stats,&mut nesting, depth, lambda);
                 }
             }
-            ForStatement | WhileStatement | DoStatement | SwitchBlock | CatchClause => {
+            Java::ForStatement
+            | Java::WhileStatement
+            | Java::DoStatement
+            | Java::SwitchBlock
+            | Java::CatchClause => {
                 increase_nesting(stats,&mut nesting, depth, lambda);
             }
-            Else /* else-if also */ => {
+            Java::Else /* else-if also */ => {
                 increment_by_one(stats);
             }
-            UnaryExpression => {
+            Java::UnaryExpression => {
                 stats.boolean_seq.not_operator(node.kind_id());
             }
-            BinaryExpression => {
-                compute_booleans::<language_java::Java>(node, stats, AMPAMP, PIPEPIPE);
+            Java::BinaryExpression => {
+                compute_booleans::<language_java::Java>(
+                    node,
+                    stats,
+                    Java::AMPAMP,
+                    Java::PIPEPIPE,
+                );
             }
-            LambdaExpression => {
+            Java::LambdaExpression => {
                 lambda += 1;
             }
             _ => {}
@@ -566,12 +597,10 @@ impl Cognitive for ElixirCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Elixir::*;
-
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            Call => {
+            Elixir::Call => {
                 if elixir_call_matches(
                     node,
                     &[
@@ -583,15 +612,15 @@ impl Cognitive for ElixirCode {
                     stats.boolean_seq.reset();
                 }
             }
-            StabClause => {
+            Elixir::StabClause => {
                 increment(stats);
                 stats.boolean_seq.reset();
             }
-            ElseBlock => {
+            Elixir::ElseBlock => {
                 increment_by_one(stats);
                 stats.boolean_seq.reset();
             }
-            AnonymousFunction => {
+            Elixir::AnonymousFunction => {
                 lambda += 1;
                 stats.boolean_seq.reset();
             }
@@ -608,29 +637,31 @@ impl Cognitive for ErlangCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Erlang::*;
-
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            IfExpr | CaseExpr | ReceiveExpr | TryExpr | TryAfter => {
+            Erlang::IfExpr
+            | Erlang::CaseExpr
+            | Erlang::ReceiveExpr
+            | Erlang::TryExpr
+            | Erlang::TryAfter => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
-            CrClause | GuardClause => {
+            Erlang::CrClause | Erlang::GuardClause => {
                 increment(stats);
                 stats.boolean_seq.reset();
             }
-            FunctionClause => {
+            Erlang::FunctionClause => {
                 if let Some(prev) = node.previous_named_sibling() {
                     if Into::<Erlang>::into(prev.kind_id()) == Erlang::FunctionClause {
                         increment(stats);
                     }
                 }
             }
-            AnonymousFun => {
+            Erlang::AnonymousFun => {
                 lambda += 1;
             }
-            BinaryOpExpr => {
+            Erlang::BinaryOpExpr => {
                 stats.boolean_seq.reset();
             }
             _ => {}
@@ -646,15 +677,13 @@ impl Cognitive for GleamCode {
         stats: &mut Stats,
         nesting_map: &mut HashMap<usize, (usize, usize, usize)>,
     ) {
-        use Gleam::*;
-
         let (mut nesting, depth, mut lambda) = get_nesting_from_map(node, nesting_map);
 
         match node.kind_id().into() {
-            Case => {
+            Gleam::Case => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
-            CaseClause => {
+            Gleam::CaseClause => {
                 if let Some(prev) = node.previous_named_sibling() {
                     if Into::<Gleam>::into(prev.kind_id()) == Gleam::CaseClause {
                         increment(stats);
@@ -665,14 +694,11 @@ impl Cognitive for GleamCode {
                     increment_by_one(stats);
                 }
             }
-            Function => {
+            Gleam::Function | Gleam::BinaryExpression => {
                 stats.boolean_seq.reset();
             }
-            AnonymousFunction => {
+            Gleam::AnonymousFunction => {
                 lambda += 1;
-            }
-            BinaryExpression => {
-                stats.boolean_seq.reset();
             }
             _ => {}
         }
@@ -704,10 +730,7 @@ impl Cognitive for KotlinCode {
                 }
             }
             "when_expression" | "for_statement" | "while_statement" | "do_while_statement"
-            | "try_expression" => {
-                increase_nesting(stats, &mut nesting, depth, lambda);
-            }
-            "catch_block" => {
+            | "try_expression" | "catch_block" => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
             "binary_expression" => {
@@ -747,10 +770,7 @@ impl Cognitive for LuaCode {
             "if_statement" | "while_statement" | "repeat_statement" | "for_statement" => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
-            "elseif_statement" => {
-                increment_by_one(stats);
-            }
-            "else_statement" => {
+            "elseif_statement" | "else_statement" => {
                 increment_by_one(stats);
             }
             "binary_expression" => {
@@ -836,10 +856,7 @@ impl Cognitive for CsharpCode {
                 }
             }
             "switch_statement" | "for_statement" | "foreach_statement" | "while_statement"
-            | "do_statement" | "try_statement" => {
-                increase_nesting(stats, &mut nesting, depth, lambda);
-            }
-            "catch_clause" => {
+            | "do_statement" | "try_statement" | "catch_clause" => {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
             "else_clause" => {
