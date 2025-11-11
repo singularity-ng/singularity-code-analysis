@@ -1,16 +1,16 @@
 [package]
-name = "singularity-code-analysis"
+name = "singularity-analysis-engine"
 version = "0.1.0"
 authors = ["Singularity Contributors", "PrimeCode Team"]
 edition = "2021"
-description = "Multi-language code analysis library with metrics, complexity analysis, and AI-powered insights"
+description = "Multi-language code analysis engine with metrics, complexity analysis, and AI-powered insights"
 license = "MIT OR Apache-2.0"
 keywords = ["metrics", "complexity", "analysis", "ai"]
 repository = "https://github.com/mikkihugo/singularity-code-analysis"
 categories = ["development-tools", "parsing"]
 
 [lib]
-name = "singularity_code_analysis"
+name = "singularity_analysis_engine"
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
@@ -34,17 +34,20 @@ tree-sitter-python = "0.25.0"
 tree-sitter-rust = "0.24.0"
 tree-sitter-cpp = "0.23.4"
 # BEAM languages
-tree-sitter-elixir = "0.3.4"
-tree-sitter-erlang = "0.15.0"
-tree-sitter-gleam = "1.0.0"
+tree-sitter-elixir = "0.3"
+tree-sitter-erlang = "0.15"
+tree-sitter-gleam = "1.0"
 # Lua
-tree-sitter-lua = "0.2.0"
+tree-sitter-lua = "0.2"
 # Go and C#
 tree-sitter-go = "0.25.0"
 tree-sitter-c-sharp = "0.23.1"
 # Kotlin
 tree-sitter-kotlin-ng = "1.1.0"
 num-traits = "0.2"
+
+# Language registry (shared across all engines)
+singularity-language-registry = { git = "https://github.com/Singularity-ng/singularity-language-registry", tag = "v0.1.0" }
 
 # NIF support (optional - only when used from Elixir)
 rustler = { version = "0.37", optional = true }
