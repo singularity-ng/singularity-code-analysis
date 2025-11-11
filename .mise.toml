@@ -1,0 +1,7 @@
+# Disable mise for this project - use Nix instead
+[settings]
+experimental = true
+activate_aggressive = false
+
+# No tools managed by mise
+[tools]
