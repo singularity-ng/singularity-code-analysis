@@ -65,7 +65,7 @@ macro_rules! is_js_func_and_closure_checker {
 #[inline]
 fn get_aho_corasick_match(code: &[u8]) -> bool {
     AHO_CORASICK
-        .get_or_init(|| AhoCorasick::new(vec![b"<div rustbindgen"]).unwrap())
+        .get_or_init(|| AhoCorasick::new(vec![b"<div rustbindgen"]).expect("TODO: Add context for why this shouldn't fail"))
         .is_match(code)
 }
 
@@ -241,7 +241,7 @@ impl Checker for PythonCode {
         node.start_row() <= 1
             && RE
                 .get_or_init(|| {
-                    Regex::new(r"^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)").unwrap()
+                    Regex::new(r"^[ \t\f]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)").expect("TODO: Add context for why this shouldn't fail")
                 })
                 .is_match(&code[node.start_byte()..node.end_byte()])
     }
@@ -555,11 +555,9 @@ impl Checker for RustCode {
     }
 
     fn is_useful_comment(node: &Node, code: &[u8]) -> bool {
-        if let Some(parent) = node.parent() {
-            if parent.kind() == "token_tree" {
-                // A comment could be a macro token
+        if let Some(parent) = node.parent() && parent.kind() == "token_tree" {
+            // A comment could be a macro token
                 return true;
-            }
         }
         let code = &code[node.start_byte()..node.end_byte()];
         code.starts_with(b"/// cbindgen:")

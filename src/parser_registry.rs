@@ -300,7 +300,7 @@ mod tests {
         let parser_result = registry.create_parser(&LANG::Rust, code, &path, None);
         assert!(parser_result.is_ok());
 
-        let parser_any = parser_result.unwrap();
+        let parser_any = parser_result.expect("TODO: Add context for why this shouldn't fail");
         // We can't easily test the downcast here without more complex setup
         // but we can verify it returns something
         assert!(parser_any.is::<crate::parser::Parser<crate::RustCode>>());

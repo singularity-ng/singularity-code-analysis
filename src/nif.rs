@@ -34,9 +34,9 @@ pub fn extract_complexity_features(code: String, language_hint: String) -> Resul
     result.insert("control_flow_count".to_string(), serde_json::Value::Number(features.control_flow_count.into()));
     result.insert("nesting_depth".to_string(), serde_json::Value::Number(features.nesting_depth.into()));
     result.insert("operator_count".to_string(), serde_json::Value::Number(features.operator_count.into()));
-    result.insert("comment_ratio".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(features.comment_ratio).unwrap()));
-    result.insert("identifier_length_avg".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(features.identifier_length_avg).unwrap()));
-    result.insert("cyclomatic_complexity".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(features.cyclomatic_complexity).unwrap()));
+    result.insert("comment_ratio".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(features.comment_ratio).expect("TODO: Add context for why this shouldn't fail")));
+    result.insert("identifier_length_avg".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(features.identifier_length_avg).expect("TODO: Add context for why this shouldn't fail")));
+    result.insert("cyclomatic_complexity".to_string(), serde_json::Value::Number(serde_json::Number::from_f64(features.cyclomatic_complexity).expect("TODO: Add context for why this shouldn't fail")));
     
     Ok(result)
 }
@@ -73,13 +73,13 @@ pub fn predict_code_quality(
     result.insert(
         "predicted_quality".to_string(),
         serde_json::Value::Number(
-            serde_json::Number::from_f64(prediction.predicted_quality.overall_score).unwrap(),
+            serde_json::Number::from_f64(prediction.predicted_quality.overall_score).expect("TODO: Add context for why this shouldn't fail"),
         ),
     );
     result.insert(
         "confidence".to_string(),
         serde_json::Value::Number(
-            serde_json::Number::from_f64(prediction.confidence_score).unwrap(),
+            serde_json::Number::from_f64(prediction.confidence_score).expect("TODO: Add context for why this shouldn't fail"),
         ),
     );
     result.insert("risk_factors".to_string(), serde_json::Value::Array(

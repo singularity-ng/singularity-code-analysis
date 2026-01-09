@@ -266,17 +266,14 @@ impl Cyclomatic for ElixirCode {
     fn compute(node: &Node, stats: &mut Stats) {
         match node.kind_id().into() {
             Elixir::Call => {
-                if let Some(identifier) = node.child(0) {
-                    if identifier.kind_id() == Elixir::Identifier
+                if let Some(identifier) = node.child(0) && identifier.kind_id() == Elixir::Identifier
                         && node_text_equals_any(
                             &identifier,
                             &[
                                 "if", "unless", "case", "cond", "with", "receive", "try", "for",
                             ],
-                        )
-                    {
-                        stats.cyclomatic += 1.;
-                    }
+                        ) {
+                    stats.cyclomatic += 1.;
                 }
             }
             Elixir::StabClause | Elixir::ElseBlock => {
@@ -300,10 +297,8 @@ impl Cyclomatic for ErlangCode {
                 stats.cyclomatic += 1.;
             }
             Erlang::FunctionClause => {
-                if let Some(prev) = node.previous_named_sibling() {
-                    if Into::<Erlang>::into(prev.kind_id()) == Erlang::FunctionClause {
-                        stats.cyclomatic += 1.;
-                    }
+                if let Some(prev) = node.previous_named_sibling() && Into::<Erlang>::into(prev.kind_id()) == Erlang::FunctionClause {
+                    stats.cyclomatic += 1.;
                 }
             }
             _ => {}
@@ -318,10 +313,8 @@ impl Cyclomatic for GleamCode {
                 stats.cyclomatic += 1.;
             }
             Gleam::CaseClause => {
-                if let Some(prev) = node.previous_named_sibling() {
-                    if Into::<Gleam>::into(prev.kind_id()) == Gleam::CaseClause {
-                        stats.cyclomatic += 1.;
-                    }
+                if let Some(prev) = node.previous_named_sibling() && Into::<Gleam>::into(prev.kind_id()) == Gleam::CaseClause {
+                    stats.cyclomatic += 1.;
                 }
             }
             _ => {}
@@ -360,10 +353,8 @@ impl Cyclomatic for KotlinCode {
             }
             "binary_expression" => {
                 // Handle && and || operators
-                if let Some(operator) = node.child_by_field_name("operator") {
-                    if matches!(operator.kind(), "&&" | "||") {
-                        stats.cyclomatic += 1.;
-                    }
+                if let Some(operator) = node.child_by_field_name("operator") && matches!(operator.kind(), "&&" | "||") {
+                    stats.cyclomatic += 1.;
                 }
             }
             _ => {}
@@ -383,10 +374,8 @@ impl Cyclomatic for LuaCode {
             }
             "binary_expression" => {
                 // Lua uses 'and'/'or' for boolean operators
-                if let Some(operator) = node.child_by_field_name("operator") {
-                    if matches!(operator.kind(), "and" | "or") {
-                        stats.cyclomatic += 1.;
-                    }
+                if let Some(operator) = node.child_by_field_name("operator") && matches!(operator.kind(), "and" | "or") {
+                    stats.cyclomatic += 1.;
                 }
             }
             _ => {}
@@ -410,10 +399,8 @@ impl Cyclomatic for GoCode {
             }
             "binary_expression" => {
                 // Handle && and || operators
-                if let Some(operator) = node.child_by_field_name("operator") {
-                    if matches!(operator.kind(), "&&" | "||") {
-                        stats.cyclomatic += 1.;
-                    }
+                if let Some(operator) = node.child_by_field_name("operator") && matches!(operator.kind(), "&&" | "||") {
+                    stats.cyclomatic += 1.;
                 }
             }
             _ => {}
@@ -441,10 +428,8 @@ impl Cyclomatic for CsharpCode {
             }
             "binary_expression" => {
                 // Handle && and || operators
-                if let Some(operator) = node.child_by_field_name("operator") {
-                    if matches!(operator.kind(), "&&" | "||") {
-                        stats.cyclomatic += 1.;
-                    }
+                if let Some(operator) = node.child_by_field_name("operator") && matches!(operator.kind(), "&&" | "||") {
+                    stats.cyclomatic += 1.;
                 }
             }
             _ => {}

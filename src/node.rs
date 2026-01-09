@@ -12,10 +12,9 @@ impl Tree {
     pub(crate) fn new<T: LanguageInfo>(code: &[u8]) -> Self {
         let mut parser = Parser::new();
         parser
-            .set_language(&T::get_lang().get_ts_language())
-            .unwrap();
+            .set_language(&T::get_lang().get_ts_language()).expect("TODO: Add context for why this shouldn't fail");
 
-        Self(parser.parse(code, None).unwrap())
+        Self(parser.parse(code, None).expect("TODO: Add context for why this shouldn't fail"))
     }
 
     pub(crate) fn get_root(&self) -> Node<'_> {
@@ -171,15 +170,11 @@ impl<'a> Node<'a> {
     pub(crate) fn has_ancestors(&self, typ: fn(&Node) -> bool, typs: fn(&Node) -> bool) -> bool {
         let mut res = false;
         let mut node = *self;
-        if let Some(parent) = node.parent() {
-            if typ(&parent) {
-                node = parent;
-            }
+        if let Some(parent) = node.parent() && typ(&parent) {
+            node = parent;
         }
-        if let Some(parent) = node.parent() {
-            if typs(&parent) {
-                res = true;
-            }
+        if let Some(parent) = node.parent() && typs(&parent) {
+            res = true;
         }
         res
     }

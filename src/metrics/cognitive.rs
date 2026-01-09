@@ -213,16 +213,10 @@ impl BoolSequence {
     }
 
     fn eval_based_on_prev(&mut self, bool_id: u16, structural: usize) -> usize {
-        if let Some(prev) = self.boolean_op {
-            if prev == bool_id {
-                // The boolean operator is equal to the previous one, so
+        if let Some(prev) = self.boolean_op && prev == bool_id {
+            // The boolean operator is equal to the previous one, so
                 // the counter is not incremented.
                 structural
-            } else {
-                // The boolean operator is different from the previous one, so
-                // the counter is incremented.
-                structural + 1
-            }
         } else {
             // Save the first boolean operator in a sequence of
             // logical operators and increment the counter.
@@ -246,12 +240,8 @@ fn get_nesting_from_map(
     node: &Node,
     nesting_map: &HashMap<usize, (usize, usize, usize)>,
 ) -> (usize, usize, usize) {
-    if let Some(parent) = node.parent() {
-        if let Some(n) = nesting_map.get(&parent.id()) {
-            *n
-        } else {
-            (0, 0, 0)
-        }
+    if let Some(parent) = node.parent() && let Some(n) = nesting_map.get(&parent.id()) {
+        *n
     } else {
         (0, 0, 0)
     }
@@ -395,10 +385,8 @@ impl Cognitive for RustCode {
                 increment_by_one(stats);
             }
             Rust::BreakExpression | Rust::ContinueExpression => {
-                if let Some(label_child) = node.child(1) {
-                    if let Rust::Label = label_child.kind_id().into() {
-                        increment_by_one(stats);
-                    }
+                if let Some(label_child) = node.child(1) && let Rust::Label = label_child.kind_id().into() {
+                    increment_by_one(stats);
                 }
             }
             Rust::UnaryExpression => {
@@ -652,10 +640,8 @@ impl Cognitive for ErlangCode {
                 stats.boolean_seq.reset();
             }
             Erlang::FunctionClause => {
-                if let Some(prev) = node.previous_named_sibling() {
-                    if Into::<Erlang>::into(prev.kind_id()) == Erlang::FunctionClause {
-                        increment(stats);
-                    }
+                if let Some(prev) = node.previous_named_sibling() && Into::<Erlang>::into(prev.kind_id()) == Erlang::FunctionClause {
+                    increment(stats);
                 }
             }
             Erlang::AnonymousFun => {
@@ -684,12 +670,8 @@ impl Cognitive for GleamCode {
                 increase_nesting(stats, &mut nesting, depth, lambda);
             }
             Gleam::CaseClause => {
-                if let Some(prev) = node.previous_named_sibling() {
-                    if Into::<Gleam>::into(prev.kind_id()) == Gleam::CaseClause {
-                        increment(stats);
-                    } else {
-                        increment_by_one(stats);
-                    }
+                if let Some(prev) = node.previous_named_sibling() && Into::<Gleam>::into(prev.kind_id()) == Gleam::CaseClause {
+                    increment(stats);
                 } else {
                     increment_by_one(stats);
                 }
@@ -718,13 +700,9 @@ impl Cognitive for KotlinCode {
         match node.kind() {
             "if_expression" => {
                 // Check if this is part of an else-if chain
-                if let Some(parent) = node.parent() {
-                    if parent.kind() == "if_expression" {
-                        // This is an else-if, only increment by one
+                if let Some(parent) = node.parent() && parent.kind() == "if_expression" {
+                    // This is an else-if, only increment by one
                         increment_by_one(stats);
-                    } else {
-                        increase_nesting(stats, &mut nesting, depth, lambda);
-                    }
                 } else {
                     increase_nesting(stats, &mut nesting, depth, lambda);
                 }
@@ -845,12 +823,8 @@ impl Cognitive for CsharpCode {
         match node.kind() {
             "if_statement" => {
                 // Check if this is an else-if
-                if let Some(parent) = node.parent() {
-                    if parent.kind() == "else_clause" {
-                        increment_by_one(stats);
-                    } else {
-                        increase_nesting(stats, &mut nesting, depth, lambda);
-                    }
+                if let Some(parent) = node.parent() && parent.kind() == "else_clause" {
+                    increment_by_one(stats);
                 } else {
                     increase_nesting(stats, &mut nesting, depth, lambda);
                 }

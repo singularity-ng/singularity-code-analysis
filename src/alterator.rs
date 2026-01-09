@@ -21,7 +21,7 @@ where
     #[must_use]
     fn get_text_span(node: &Node, code: &[u8], span: bool, text: bool) -> (String, Span) {
         let text = if text {
-            String::from_utf8(code[node.start_byte()..node.end_byte()].to_vec()).unwrap()
+            String::from_utf8(code[node.start_byte()..node.end_byte()].to_vec()).expect("TODO: Add context for why this shouldn't fail")
         } else {
             String::new()
         };
@@ -84,10 +84,8 @@ impl Alterator for CppCode {
                 AstNode::new(node.kind(), text, span, Vec::new())
             }
             Cpp::PreprocDef | Cpp::PreprocFunctionDef | Cpp::PreprocCall => {
-                if let Some(last) = children.last() {
-                    if last.r#type == "\n" {
-                        children.pop();
-                    }
+                if let Some(last) = children.last() && last.r#type == "\n" {
+                    children.pop();
                 }
                 Self::get_default(node, code, span, children)
             }

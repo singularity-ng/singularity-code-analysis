@@ -4,7 +4,7 @@ use tree_sitter::Parser;
 fn main() {
     let language = tree_sitter_elixir::LANGUAGE.into();
     let mut parser = Parser::new();
-    parser.set_language(&language).unwrap();
+    parser.set_language(&language).expect("TODO: Add context for why this shouldn't fail");
 
     let source_code = r#"
 defmodule Example do
@@ -31,7 +31,7 @@ defmodule Example do
 end
 "#;
 
-    let tree = parser.parse(source_code, None).unwrap();
+    let tree = parser.parse(source_code, None).expect("TODO: Add context for why this shouldn't fail");
     let root = tree.root_node();
 
     println!("=== Elixir Tree-Sitter Node Types ===\n");
@@ -42,10 +42,8 @@ end
         let Ok(kind_id) = u16::try_from(i) else {
             break;
         };
-        if language.node_kind_is_named(kind_id) {
-            if let Some(kind) = language.node_kind_for_id(kind_id) {
-                println!("{kind_id:3}: {kind}");
-            }
+        if language.node_kind_is_named(kind_id) && let Some(kind) = language.node_kind_for_id(kind_id) {
+            println!("{kind_id:3}: {kind}");
         }
     }
 }

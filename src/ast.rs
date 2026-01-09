@@ -97,7 +97,7 @@ fn build<T: ParserTrait>(parser: &T, span: bool, comment: bool) -> Option<AstNod
     // the idea here is to build AstNode from bottom-to-top and from left-to-right.
     // So once we have built the array of children we can build the node itself until the root.
     loop {
-        let ts_node = node_stack.last().unwrap();
+        let ts_node = node_stack.last().expect("TODO: Add context for why this shouldn't fail");
         cursor.reset(ts_node);
         if cursor.goto_first_child() {
             let node = cursor.node();
@@ -105,18 +105,18 @@ fn build<T: ParserTrait>(parser: &T, span: bool, comment: bool) -> Option<AstNod
             node_stack.push(node);
         } else {
             loop {
-                let ts_node = node_stack.pop().unwrap();
+                let ts_node = node_stack.pop().expect("TODO: Add context for why this shouldn't fail");
                 if let Some(node) = T::Checker::get_ast_node(
                     &ts_node,
                     code,
-                    child_stack.pop().unwrap(),
+                    child_stack.pop().expect("TODO: Add context for why this shouldn't fail"),
                     span,
                     comment,
                 ) {
                     if child_stack.is_empty() {
                         return Some(node);
                     }
-                    child_stack.last_mut().unwrap().push(node);
+                    child_stack.last_mut().expect("TODO: Add context for why this shouldn't fail").push(node);
                 }
                 if let Some(next_node) = ts_node.next_sibling() {
                     child_stack.push(Vec::with_capacity(next_node.child_count()));

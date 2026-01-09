@@ -205,12 +205,8 @@ fn analyze_command(
     );
     spinner.set_message("Analyzing code...");
 
-    let files = if path.is_dir() {
-        if recursive {
-            collect_files_recursive(path)?
-        } else {
-            collect_files_single(path)?
-        }
+    let files = if path.is_dir() && recursive {
+        collect_files_recursive(path)?
     } else {
         vec![path.to_path_buf()]
     };
@@ -477,12 +473,8 @@ fn collect_files_recursive(dir: &Path) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     for entry in walkdir::WalkDir::new(dir).follow_links(true) {
         let entry = entry?;
-        if entry.file_type().is_file() {
-            if let Some(ext) = entry.path().extension() {
-                if is_source_file(ext.to_str().unwrap_or("")) {
-                    files.push(entry.path().to_path_buf());
-                }
-            }
+        if entry.file_type().is_file() && let Some(ext) = entry.path().extension() && is_source_file(ext.to_str().unwrap_or("")) {
+            files.push(entry.path().to_path_buf());
         }
     }
     Ok(files)
@@ -492,12 +484,8 @@ fn collect_files_single(dir: &Path) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
-        if entry.file_type()?.is_file() {
-            if let Some(ext) = entry.path().extension() {
-                if is_source_file(ext.to_str().unwrap_or("")) {
-                    files.push(entry.path());
-                }
-            }
+        if entry.file_type()?.is_file() && let Some(ext) = entry.path().extension() && is_source_file(ext.to_str().unwrap_or("")) {
+            files.push(entry.path());
         }
     }
     Ok(files)

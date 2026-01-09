@@ -39,7 +39,7 @@ where
             break;
         }
         // Cannot panic because of the check immediately above.
-        let job = job.unwrap();
+        let job = job.expect("TODO: Add context for why this shouldn't fail");
         let path = job.path.clone();
 
         if let Err(err) = func(job.path, &job.cfg) {

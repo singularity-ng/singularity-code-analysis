@@ -148,10 +148,8 @@ fn call_matches_any(node: &Node, names: &[&str]) -> bool {
             }
             "dot" | "remote" => {
                 for idx in (0..target.child_count()).rev() {
-                    if let Some(child) = target.child(idx) {
-                        if matches!(child.kind(), "identifier" | "atom" | "operator_identifier") {
-                            return analysis_context::node_text_equals_any(&child, names);
-                        }
+                    if let Some(child) = target.child(idx) && matches!(child.kind(), "identifier" | "atom" | "operator_identifier") {
+                        return analysis_context::node_text_equals_any(&child, names);
                     }
                 }
                 false

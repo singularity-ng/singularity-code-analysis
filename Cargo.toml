@@ -2,7 +2,7 @@
 name = "singularity-analysis-engine"
 version = "0.1.0"
 authors = ["Singularity Contributors", "PrimeCode Team"]
-edition = "2021"
+edition = "2024"
 description = "Multi-language code analysis engine with metrics, complexity analysis, and AI-powered insights"
 license = "MIT OR Apache-2.0"
 keywords = ["metrics", "complexity", "analysis", "ai"]
@@ -22,7 +22,7 @@ num-derive = "0.4"
 num-format = "0.4"
 petgraph = "0.8"
 regex = "1.0"
-serde = { version = "1.0", features = ["derive"] }
+serde = { workspace = true, features = ["derive"] }
 termcolor = "1.2"
 walkdir = "2.0"
 

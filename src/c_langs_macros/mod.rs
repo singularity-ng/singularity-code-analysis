@@ -35,7 +35,7 @@ mod tests {
             if debug || root.has_error() {
                 let display = String::from_utf8_lossy(sample.as_bytes());
                 eprintln!("Sample (CPP) {n}: {display}");
-                dump_node(&code, &root, -1, None, None).unwrap();
+                dump_node(&code, &root, -1, None, None).expect("TODO: Add context for why this shouldn't fail");
             }
             if expect_success {
                 assert!(

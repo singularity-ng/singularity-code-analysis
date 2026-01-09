@@ -68,15 +68,9 @@ pub fn read_file_with_eol(path: &Path) -> std::io::Result<Option<Vec<u8>>> {
     let mut file = File::open(path)?;
 
     let mut start = vec![0; 64.min(file_size)];
-    let start = if file.read_exact(&mut start).is_ok() {
+    let start = if file.read_exact(&mut start).is_ok() && start[..2] == [b'\xFE', b'\xFF'] || start[..2] == [b'\xFF', b'\xFE'] {
         // Skip the bom if one
-        if start[..2] == [b'\xFE', b'\xFF'] || start[..2] == [b'\xFF', b'\xFE'] {
-            &start[2..]
-        } else if start[..3] == [b'\xEF', b'\xBB', b'\xBF'] {
-            &start[3..]
-        } else {
-            &start
-        }
+        &start[2..]
     } else {
         return Ok(None);
     };
@@ -143,7 +137,7 @@ pub fn write_file(path: &Path, data: &[u8]) -> std::io::Result<()> {
 /// ```
 pub fn get_language_for_file(path: &Path) -> Option<LANG> {
     if let Some(ext) = path.extension() {
-        let ext = ext.to_str().unwrap().to_lowercase();
+        let ext = ext.to_str().expect("TODO: Add context for why this shouldn't fail").to_lowercase();
         get_from_ext(&ext)
     } else {
         None
@@ -171,7 +165,7 @@ fn get_regex<'a>(
     regex: &'a str,
 ) -> Option<regex::bytes::Captures<'a>> {
     once_lock
-        .get_or_init(|| Regex::new(regex).unwrap())
+        .get_or_init(|| Regex::new(regex).expect("TODO: Add context for why this shouldn't fail"))
         .captures_iter(line)
         .next()
 }
@@ -238,23 +232,11 @@ pub fn guess_language<'a, P: AsRef<Path>>(buf: &[u8], path: P) -> (Option<LANG>,
 
     let from_mode = get_from_emacs_mode(&mode);
 
-    if let Some(lang_ext) = from_ext {
-        if let Some(lang_mode) = from_mode {
-            if lang_ext == lang_mode {
-                (
+    if let Some(lang_ext) = from_ext && let Some(lang_mode) = from_mode && lang_ext == lang_mode {
+        (
                     Some(lang_mode),
                     fake::get_true(&ext, &mode).unwrap_or_else(|| lang_mode.get_name()),
                 )
-            } else {
-                // we should probably rely on extension here
-                (Some(lang_ext), lang_ext.get_name())
-            }
-        } else {
-            (
-                Some(lang_ext),
-                fake::get_true(&ext, &mode).unwrap_or_else(|| lang_ext.get_name()),
-            )
-        }
     } else if let Some(lang_mode) = from_mode {
         (
             Some(lang_mode),
@@ -309,8 +291,8 @@ pub(crate) fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
 pub(crate) fn get_paths_dist(path1: &Path, path2: &Path) -> Option<usize> {
     for ancestor in path1.ancestors() {
         if path2.starts_with(ancestor) && !ancestor.as_os_str().is_empty() {
-            let path1 = path1.strip_prefix(ancestor).unwrap();
-            let path2 = path2.strip_prefix(ancestor).unwrap();
+            let path1 = path1.strip_prefix(ancestor).expect("TODO: Add context for why this shouldn't fail");
+            let path2 = path2.strip_prefix(ancestor).expect("TODO: Add context for why this shouldn't fail");
             return Some(path1.components().count() + path2.components().count());
         }
     }
@@ -328,7 +310,7 @@ pub(crate) fn guess_file<S: ::std::hash::BuildHasher>(
         include_path
     };
     let include_path = normalize_path(include_path);
-    if let Some(possibilities) = all_files.get(include_path.file_name().unwrap().to_str().unwrap())
+    if let Some(possibilities) = all_files.get(include_path.file_name().expect("TODO: Add context for why this shouldn't fail").to_str().expect("TODO: Add context for why this shouldn't fail"))
     {
         if possibilities.len() == 1 {
             // Only one file with this name
@@ -456,8 +438,8 @@ mod tests {
             (b"abcdef".to_vec(), Some(b"abcdef\n".to_vec())),
         ];
         for (d, expected) in data {
-            write_file(&tmp_path, &d).unwrap();
-            let res = read_file_with_eol(&tmp_path).unwrap();
+            write_file(&tmp_path, &d).expect("TODO: Add context for why this shouldn't fail");
+            let res = read_file_with_eol(&tmp_path).expect("TODO: Add context for why this shouldn't fail");
             assert_eq!(res, expected);
         }
     }

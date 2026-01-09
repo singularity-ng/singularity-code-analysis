@@ -206,11 +206,9 @@ fn apply_existing_variants(
     existing: &mut HashMap<String, VecDeque<String>>,
 ) -> Vec<KindInfo> {
     for kind in &mut kinds {
-        if let Some(names) = existing.get_mut(&kind.literal) {
-            if let Some(existing_name) = names.pop_front() {
-                kind.variant = existing_name;
+        if let Some(names) = existing.get_mut(&kind.literal) && let Some(existing_name) = names.pop_front() {
+            kind.variant = existing_name;
                 continue;
-            }
         }
     }
     kinds
@@ -381,7 +379,7 @@ fn special_symbol(raw: &str) -> Option<&'static str> {
 }
 
 fn quote(value: &str) -> String {
-    serde_json::to_string(value).unwrap()
+    serde_json::to_string(value).expect("TODO: Add context for why this shouldn't fail")
 }
 
 fn generate_macros(out_dir: Utf8PathBuf) -> Result<()> {

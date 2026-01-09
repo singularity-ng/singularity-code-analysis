@@ -7,9 +7,9 @@ fn main() {
 
     let language = tree_sitter_python::LANGUAGE.into();
     let mut parser = Parser::new();
-    parser.set_language(&language).unwrap();
+    parser.set_language(&language).expect("TODO: Add context for why this shouldn't fail");
 
-    let tree = parser.parse(code, None).unwrap();
+    let tree = parser.parse(code, None).expect("TODO: Add context for why this shouldn't fail");
     let root = tree.root_node();
 
     println!("AST Structure:");

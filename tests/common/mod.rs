@@ -35,7 +35,7 @@ fn act_on_file(path: PathBuf, cfg: &Config) -> std::io::Result<()> {
     };
 
     // Get FuncSpace struct
-    let funcspace_struct = get_function_spaces(&language, source, &path, None).unwrap();
+    let funcspace_struct = get_function_spaces(&language, source, &path, None).expect("TODO: Add context for why this shouldn't fail");
 
     insta::with_settings!({snapshot_path => Path::new(SNAPSHOT_PATH)
                 .join(path.strip_prefix(Path::new(REPO)).unwrap())
@@ -70,17 +70,17 @@ pub fn compare_rca_output_with_files(repo_name: &str, include: &[&str], exclude:
 
     let mut include_globs = GlobSetBuilder::new();
     for file in include {
-        include_globs.add(Glob::new(file).unwrap());
+        include_globs.add(Glob::new(file).expect("TODO: Add context for why this shouldn't fail"));
     }
 
     let mut exclude_globs = GlobSetBuilder::new();
     for file in exclude {
-        exclude_globs.add(Glob::new(file).unwrap());
+        exclude_globs.add(Glob::new(file).expect("TODO: Add context for why this shouldn't fail"));
     }
 
     let files_data = FilesData {
-        include: include_globs.build().unwrap(),
-        exclude: exclude_globs.build().unwrap(),
+        include: include_globs.build().expect("TODO: Add context for why this shouldn't fail"),
+        exclude: exclude_globs.build().expect("TODO: Add context for why this shouldn't fail"),
         paths: vec![Path::new(REPO).join(repo_name)],
     };
 

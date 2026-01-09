@@ -49,12 +49,8 @@ fn remove_from_code(code: &[u8], spans: Vec<(usize, usize, usize)>) -> Vec<u8> {
     let mut code_start = 0;
     for (start, end, lines) in spans.into_iter().rev() {
         new_code.extend(&code[code_start..start]);
-        if lines != 0 {
-            if lines <= CR.len() {
-                new_code.extend(&CR[..lines]);
-            } else {
-                new_code.resize_with(new_code.len() + lines, || b'\n');
-            }
+        if lines != 0 && lines <= CR.len() {
+            new_code.extend(&CR[..lines]);
         }
         code_start = end;
     }
@@ -82,14 +78,8 @@ impl Callback for CommentRm {
     type Cfg = CommentRmCfg;
 
     fn call<T: ParserTrait>(cfg: Self::Cfg, parser: &T) -> Self::Res {
-        if let Some(new_source) = rm_comments(parser) {
-            if cfg.in_place {
-                write_file(&cfg.path, &new_source)?;
-            } else if let Ok(new_source) = std::str::from_utf8(&new_source) {
-                println!("{new_source}");
-            } else {
-                io::stdout().write_all(&new_source)?;
-            }
+        if let Some(new_source) = rm_comments(parser) && cfg.in_place {
+            write_file(&cfg.path, &new_source)?;
         }
         Ok(())
     }
@@ -127,7 +117,7 @@ mod tests {
         trimmed_bytes.push(b'\n');
         let parser = CcommentParser::new(trimmed_bytes, &path, None);
 
-        let no_comments = rm_comments(&parser).unwrap();
+        let no_comments = rm_comments(&parser).expect("TODO: Add context for why this shouldn't fail");
 
         assert_eq!(no_comments.as_slice(), SOURCE_CODE_NO_COMMENTS.as_bytes());
     }

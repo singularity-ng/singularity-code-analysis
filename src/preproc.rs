@@ -145,9 +145,9 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
             }
             let component_nodes = component.clone();
             for c in component_nodes {
-                let path = g.remove_node(c).unwrap();
-                paths.insert(path.to_str().unwrap().to_string());
-                *nodes.get_mut(&path).unwrap() = replacement;
+                let path = g.remove_node(c).expect("TODO: Add context for why this shouldn't fail");
+                paths.insert(path.to_str().expect("TODO: Add context for why this shouldn't fail").to_string());
+                *nodes.get_mut(&path).expect("TODO: Add context for why this shouldn't fail") = replacement;
             }
 
             eprintln!("Warning: possible include cycle:");
@@ -165,7 +165,7 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
         if let Some(pf) = files.get_mut(&path) {
             let x_inc = &mut pf.indirect_includes;
             while let Some(node) = dfs.next(&g) {
-                let w = g.node_weight(node).unwrap();
+                let w = g.node_weight(node).expect("TODO: Add context for why this shouldn't fail");
                 if w == &PathBuf::from("") {
                     let paths = scc_map.get(&node);
                     if let Some(paths) = paths {
@@ -176,7 +176,7 @@ pub fn fix_includes<S: ::std::hash::BuildHasher>(
                         eprintln!("DEBUG: {} {node:?}", path.display());
                     }
                 } else {
-                    x_inc.insert(w.to_str().unwrap().to_string());
+                    x_inc.insert(w.to_str().expect("TODO: Add context for why this shouldn't fail").to_string());
                 }
             }
         } else {
@@ -225,7 +225,7 @@ pub fn preprocess(parser: &PreprocParser, path: &Path, results: &mut PreprocResu
                 let identifier = cursor.node();
 
                 if identifier.kind_id() == Preproc::Identifier {
-                    let r#macro = identifier.utf8_text(code).unwrap();
+                    let r#macro = identifier.utf8_text(code).expect("TODO: Add context for why this shouldn't fail");
                     if !is_specials(r#macro) {
                         file_result.macros.insert(r#macro.to_string());
                     }
@@ -239,10 +239,10 @@ pub fn preprocess(parser: &PreprocParser, path: &Path, results: &mut PreprocResu
                 if file.kind_id() == Preproc::StringLiteral {
                     // remove the starting/ending double quote
                     let file = &code[file.start_byte() + 1..file.end_byte() - 1];
-                    let start = file.iter().position(|&c| c != b' ' && c != b'\t').unwrap();
-                    let end = file.iter().rposition(|&c| c != b' ' && c != b'\t').unwrap();
+                    let start = file.iter().position(|&c| c != b' ' && c != b'\t').expect("TODO: Add context for why this shouldn't fail");
+                    let end = file.iter().rposition(|&c| c != b' ' && c != b'\t').expect("TODO: Add context for why this shouldn't fail");
                     let file = &file[start..=end];
-                    let file = String::from_utf8(file.to_vec()).unwrap();
+                    let file = String::from_utf8(file.to_vec()).expect("TODO: Add context for why this shouldn't fail");
                     file_result.direct_includes.insert(file);
                 }
             }

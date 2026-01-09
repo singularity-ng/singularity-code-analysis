@@ -141,10 +141,8 @@ impl Getter for PythonCode {
             "string" => {
                 let mut operator = HalsteadType::Unknown;
                 // check if we've a documentation string or a multiline comment
-                if let Some(parent) = node.parent() {
-                    if parent.kind() != "expression_statement" || parent.child_count() != 1 {
-                        operator = HalsteadType::Operand;
-                    }
+                if let Some(parent) = node.parent() && parent.kind() != "expression_statement" || parent.child_count() != 1 {
+                    operator = HalsteadType::Operand;
                 }
                 operator
             }
@@ -699,10 +697,9 @@ impl Getter for CppCode {
                 if let Some(declarator) = node.child_by_field_name("declarator") {
                     let declarator_node = declarator;
                     if let Some(fd) = declarator_node
-                        .first_occurrence_kind(|child| child.kind() == "function_declarator")
+                        .first_occurrence_kind(|child| child.kind() == "function_declarator") && let Some(first) = fd.child(0)
                     {
-                        if let Some(first) = fd.child(0) {
-                            match first.kind() {
+                        match first.kind() {
                                 "type_identifier"
                                 | "identifier"
                                 | "field_identifier"
@@ -716,7 +713,6 @@ impl Getter for CppCode {
                                 }
                                 _ => {}
                             }
-                        }
                     }
                 }
             }
@@ -917,11 +913,8 @@ impl Getter for ElixirCode {
             "source" => SpaceKind::Unit,
             "anonymous_function" => SpaceKind::Function,
             "do_block" => {
-                if let Some(parent) = node.parent() {
-                    if parent.kind() == "call" {
-                        if let Some(head) = parent.child(0) {
-                            if head.kind() == "identifier" {
-                                // Determine whether this do-block belongs to a module or a function
+                if let Some(parent) = node.parent() && parent.kind() == "call" && let Some(head) = parent.child(0) && head.kind() == "identifier" {
+                    // Determine whether this do-block belongs to a module or a function
                                 return with_keyword(&head, |kw| {
                                     if matches!(kw, "defmodule" | "defprotocol" | "defimpl") {
                                         SpaceKind::Unit
@@ -935,9 +928,6 @@ impl Getter for ElixirCode {
                                     }
                                 })
                                 .unwrap_or(SpaceKind::Unknown);
-                            }
-                        }
-                    }
                 }
                 SpaceKind::Unknown
             }

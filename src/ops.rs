@@ -104,7 +104,7 @@ fn finalize<T: ParserTrait>(state_stack: &mut Vec<State>, diff_level: usize) {
 
     // If there is only the unit space
     if state_stack.len() == 1 {
-        let last_state = state_stack.last_mut().unwrap();
+        let last_state = state_stack.last_mut().expect("TODO: Add context for why this shouldn't fail");
         // Compute last_state operators and operands
         compute_operators_and_operands::<T>(last_state);
     }
@@ -113,8 +113,8 @@ fn finalize<T: ParserTrait>(state_stack: &mut Vec<State>, diff_level: usize) {
         if state_stack.len() == 1 {
             break;
         }
-        let mut state = state_stack.pop().unwrap();
-        let last_state = state_stack.last_mut().unwrap();
+        let mut state = state_stack.pop().expect("TODO: Add context for why this shouldn't fail");
+        let last_state = state_stack.last_mut().expect("TODO: Add context for why this shouldn't fail");
 
         // Compute state operators and operands
         compute_operators_and_operands::<T>(&mut state);
@@ -306,7 +306,7 @@ mod tests {
         let path = PathBuf::from(file);
         let mut trimmed_bytes = source.trim_end().trim_matches('\n').as_bytes().to_vec();
         trimmed_bytes.push(b'\n');
-        let ops = get_ops(&lang, trimmed_bytes, &path, None).unwrap();
+        let ops = get_ops(&lang, trimmed_bytes, &path, None).expect("TODO: Add context for why this shouldn't fail");
 
         let mut operators_str: Vec<&str> = ops.operators.iter().map(AsRef::as_ref).collect();
         let mut operands_str: Vec<&str> = ops.operands.iter().map(AsRef::as_ref).collect();

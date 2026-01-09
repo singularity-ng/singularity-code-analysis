@@ -243,20 +243,20 @@ fn finalize<T: ParserTrait>(state_stack: &mut Vec<State>, diff_level: usize) {
     }
     for _ in 0..diff_level {
         if state_stack.len() == 1 {
-            let last_state = state_stack.last_mut().unwrap();
+            let last_state = state_stack.last_mut().expect("TODO: Add context for why this shouldn't fail");
             compute_minmax(last_state);
             compute_sum(last_state);
             compute_halstead_mi_and_wmc::<T>(last_state);
             compute_averages(last_state);
             break;
         }
-        let mut state = state_stack.pop().unwrap();
+        let mut state = state_stack.pop().expect("TODO: Add context for why this shouldn't fail");
         compute_minmax(&mut state);
         compute_sum(&mut state);
         compute_halstead_mi_and_wmc::<T>(&mut state);
         compute_averages(&mut state);
 
-        let last_state = state_stack.last_mut().unwrap();
+        let last_state = state_stack.last_mut().expect("TODO: Add context for why this shouldn't fail");
         last_state.halstead_maps.merge(&state.halstead_maps);
         compute_halstead_mi_and_wmc::<T>(last_state);
 

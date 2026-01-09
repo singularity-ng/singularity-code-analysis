@@ -72,7 +72,7 @@ impl Callback for Count {
 
     fn call<T: ParserTrait>(cfg: Self::Cfg, parser: &T) -> Self::Res {
         let (good, total) = count(parser, &cfg.filters);
-        let mut results = cfg.stats.lock().unwrap();
+        let mut results = cfg.stats.lock().expect("TODO: Add context for why this shouldn't fail");
         results.good += good;
         results.total += total;
         Ok(())
