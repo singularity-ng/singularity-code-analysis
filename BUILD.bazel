@@ -1,0 +1,26 @@
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test", "rust_doc_test")
+load("@crate_index//:defs.bzl", "aliases", "all_crate_deps")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "singularity-code-analysis",
+    srcs = glob(["src/**/*.rs"]),
+    aliases = aliases(),
+    deps = all_crate_deps() + [
+        "//crates/vendor/singularity-code-analysis/enums",
+        "//crates/vendor/singularity-language-registry",
+    ],
+    proc_macro_deps = all_crate_deps(proc_macro = True),
+)
+
+rust_test(
+    name = "singularity_code_analysis_test",
+    crate = ":singularity-code-analysis",
+    deps = all_crate_deps(test = True),
+)
+
+rust_doc_test(
+    name = "singularity_code_analysis_doc_test",
+    crate = ":singularity-code-analysis",
+)
