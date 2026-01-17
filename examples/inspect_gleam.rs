@@ -37,8 +37,10 @@ fn private_function(x: Int) -> String {
 
     println!("\n=== All Named Node Kinds ===");
     for i in 0..language.node_kind_count() {
-        if language.node_kind_is_named(i as u16) && let Some(kind) = language.node_kind_for_id(i as u16) {
-            println!("{:3}: {}", i, kind);
+        if language.node_kind_is_named(i as u16) {
+            if let Some(kind) = language.node_kind_for_id(i as u16) {
+                println!("{:3}: {}", i, kind);
+            }
         }
     }
 }

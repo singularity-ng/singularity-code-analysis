@@ -555,9 +555,11 @@ impl Checker for RustCode {
     }
 
     fn is_useful_comment(node: &Node, code: &[u8]) -> bool {
-        if let Some(parent) = node.parent() && parent.kind() == "token_tree" {
-            // A comment could be a macro token
+        if let Some(parent) = node.parent() {
+            if parent.kind() == "token_tree" {
+                // A comment could be a macro token
                 return true;
+            }
         }
         let code = &code[node.start_byte()..node.end_byte()];
         code.starts_with(b"/// cbindgen:")

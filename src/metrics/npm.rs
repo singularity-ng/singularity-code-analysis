@@ -252,10 +252,13 @@ impl Npm for JavaCode {
                         // The first child node contains the list of method modifiers
                         // There are several modifiers that may be part of a method declaration
                         // Source: https://docs.oracle.com/javase/tutorial/reflect/member/methodModifiers.html
-                        if let Some(modifiers) = method.child(0) && matches!(modifiers.kind_id().into(), Modifiers)
-                                && modifiers.first_child(|id| id == Public).is_some() {
-                            // Looks for the `public` keyword in the list of method modifiers
-                            stats.class_npm += 1;
+                        if let Some(modifiers) = method.child(0) {
+                            if matches!(modifiers.kind_id().into(), Modifiers)
+                                && modifiers.first_child(|id| id == Public).is_some()
+                            {
+                                // Looks for the `public` keyword in the list of method modifiers
+                                stats.class_npm += 1;
+                            }
                         }
                     })
                     .count();

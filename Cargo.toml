@@ -9,6 +9,9 @@ keywords = ["metrics", "complexity", "analysis", "ai"]
 repository = "https://github.com/mikkihugo/singularity-code-analysis"
 categories = ["development-tools", "parsing"]
 
+# Mark as standalone crate (not part of parent workspace)
+[workspace]
+
 [lib]
 name = "singularity_analysis_engine"
 crate-type = ["rlib", "cdylib"]
@@ -22,7 +25,7 @@ num-derive = "0.4"
 num-format = "0.4"
 petgraph = "0.8"
 regex = "1.0"
-serde = { workspace = true, features = ["derive"] }
+serde = { version = "1.0", features = ["derive"] }
 termcolor = "1.2"
 walkdir = "2.0"
 

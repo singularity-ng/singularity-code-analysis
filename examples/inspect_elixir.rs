@@ -42,8 +42,10 @@ end
         let Ok(kind_id) = u16::try_from(i) else {
             break;
         };
-        if language.node_kind_is_named(kind_id) && let Some(kind) = language.node_kind_for_id(kind_id) {
-            println!("{kind_id:3}: {kind}");
+        if language.node_kind_is_named(kind_id) {
+            if let Some(kind) = language.node_kind_for_id(kind_id) {
+                println!("{kind_id:3}: {kind}");
+            }
         }
     }
 }

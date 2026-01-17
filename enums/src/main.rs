@@ -206,9 +206,11 @@ fn apply_existing_variants(
     existing: &mut HashMap<String, VecDeque<String>>,
 ) -> Vec<KindInfo> {
     for kind in &mut kinds {
-        if let Some(names) = existing.get_mut(&kind.literal) && let Some(existing_name) = names.pop_front() {
-            kind.variant = existing_name;
+        if let Some(names) = existing.get_mut(&kind.literal) {
+            if let Some(existing_name) = names.pop_front() {
+                kind.variant = existing_name;
                 continue;
+            }
         }
     }
     kinds

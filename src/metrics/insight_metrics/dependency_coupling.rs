@@ -163,10 +163,12 @@ impl DependencyCouplingMetrics {
                         current_path,
                         cycles,
                     );
-                } else if rec_stack.contains(neighbor) && let Some(pos) = current_path.iter().position(|x| x == neighbor) {
-                    // Found a cycle
-                    let cycle = current_path[pos..].to_vec();
+                } else if rec_stack.contains(neighbor) {
+                    if let Some(pos) = current_path.iter().position(|x| x == neighbor) {
+                        // Found a cycle
+                        let cycle = current_path[pos..].to_vec();
                         cycles.push(cycle);
+                    }
                 }
             }
         }

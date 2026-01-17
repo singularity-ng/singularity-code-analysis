@@ -78,8 +78,10 @@ impl Callback for CommentRm {
     type Cfg = CommentRmCfg;
 
     fn call<T: ParserTrait>(cfg: Self::Cfg, parser: &T) -> Self::Res {
-        if let Some(new_source) = rm_comments(parser) && cfg.in_place {
-            write_file(&cfg.path, &new_source)?;
+        if let Some(new_source) = rm_comments(parser) {
+            if cfg.in_place {
+                write_file(&cfg.path, &new_source)?;
+            }
         }
         Ok(())
     }

@@ -473,8 +473,12 @@ fn collect_files_recursive(dir: &Path) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     for entry in walkdir::WalkDir::new(dir).follow_links(true) {
         let entry = entry?;
-        if entry.file_type().is_file() && let Some(ext) = entry.path().extension() && is_source_file(ext.to_str().unwrap_or("")) {
-            files.push(entry.path().to_path_buf());
+        if entry.file_type().is_file() {
+            if let Some(ext) = entry.path().extension() {
+                if is_source_file(ext.to_str().unwrap_or("")) {
+                    files.push(entry.path().to_path_buf());
+                }
+            }
         }
     }
     Ok(files)
@@ -484,8 +488,12 @@ fn collect_files_single(dir: &Path) -> Result<Vec<PathBuf>> {
     let mut files = Vec::new();
     for entry in fs::read_dir(dir)? {
         let entry = entry?;
-        if entry.file_type()?.is_file() && let Some(ext) = entry.path().extension() && is_source_file(ext.to_str().unwrap_or("")) {
-            files.push(entry.path());
+        if entry.file_type()?.is_file() {
+            if let Some(ext) = entry.path().extension() {
+                if is_source_file(ext.to_str().unwrap_or("")) {
+                    files.push(entry.path());
+                }
+            }
         }
     }
     Ok(files)

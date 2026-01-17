@@ -232,12 +232,17 @@ pub fn guess_language<'a, P: AsRef<Path>>(buf: &[u8], path: P) -> (Option<LANG>,
 
     let from_mode = get_from_emacs_mode(&mode);
 
-    if let Some(lang_ext) = from_ext && let Some(lang_mode) = from_mode && lang_ext == lang_mode {
-        (
+    if let Some(lang_ext) = from_ext {
+        if let Some(lang_mode) = from_mode {
+            if lang_ext == lang_mode {
+                return (
                     Some(lang_mode),
                     fake::get_true(&ext, &mode).unwrap_or_else(|| lang_mode.get_name()),
-                )
-    } else if let Some(lang_mode) = from_mode {
+                );
+            }
+        }
+    }
+    if let Some(lang_mode) = from_mode {
         (
             Some(lang_mode),
             fake::get_true(&ext, &mode).unwrap_or_else(|| lang_mode.get_name()),
